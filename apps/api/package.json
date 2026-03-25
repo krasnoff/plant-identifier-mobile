@@ -10,6 +10,9 @@
     "check-types": "tsc --noEmit -p tsconfig.json"
   },
   "dependencies": {
+    "@repo/configs": "workspace:*",
+    "@repo/types": "workspace:*",
+    "@repo/utils": "workspace:*",
     "express": "^5.1.0"
   },
   "devDependencies": {
