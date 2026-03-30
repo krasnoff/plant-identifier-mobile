@@ -1,10 +1,11 @@
 import { useRouter } from 'expo-router';
-import { Text, View, StyleSheet, Pressable, Button } from 'react-native';
-import React, { useState } from 'react';
+import { Text, View, StyleSheet, Pressable, Button, TextInput, KeyboardAvoidingView, Platform, ScrollView, Keyboard } from 'react-native';
+import React, { useEffect, useState } from 'react';
 import { StatusBar } from 'expo-status-bar';
 import { useTheme } from '../../context/theme-context';
-import { Colors } from '../../constants/theme';
+import { Colors, Fonts } from '../../constants/theme';
 import { CameraView, CameraType, useCameraPermissions } from 'expo-camera';
+import { useHeaderHeight } from '@react-navigation/elements';
 
 export default function Search() {
   const router = useRouter();
@@ -13,6 +14,23 @@ export default function Search() {
 
   const [facing, setFacing] = useState<CameraType>('back');
   const [permission, requestPermission] = useCameraPermissions();
+
+  const [keyboardOpen, setKeyboardOpen] = useState(false);
+  const headerHeight = useHeaderHeight(); // Adjust this value based on your header's actual height
+
+  useEffect(() => {
+    const showSubscription = Keyboard.addListener('keyboardDidShow', () => {
+      setKeyboardOpen(true);
+    });
+    const hideSubscription = Keyboard.addListener('keyboardDidHide', () => {
+      setKeyboardOpen(false);
+    });
+
+    return () => {
+      showSubscription.remove();
+      hideSubscription.remove();
+    };
+  }, []);
 
   if (!permission) {
     // Camera permissions are still loading.
@@ -30,6 +48,15 @@ export default function Search() {
   }
 
   return (
+    <KeyboardAvoidingView
+      style={{ flex: 1 }}
+      behavior={Platform.OS === 'ios' ? 'padding' : (keyboardOpen ? 'height' : undefined)}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? headerHeight : -90} // tweak this if needed
+    >
+    <ScrollView
+      contentContainerStyle={{ flexGrow: 1, justifyContent: 'flex-end' }}
+      keyboardShouldPersistTaps="handled"
+    >
     <View style={[styles.container, { backgroundColor: colors.background }]}>
       <StatusBar
         backgroundColor={colors.background}
@@ -58,26 +85,42 @@ export default function Search() {
               </View>
             </View>
           </View>
-        <Text style={{ color: colors.text }}>search view</Text>
+      </View>
+
+      <View style={styles.buttonForm}>
+        <Text style={styles.title}>Add details or ask a question</Text>
+        <View style={styles.inputContainer}>
+          <TextInput 
+            placeholder='e.g Found near an oak tree, seems to have serrated edges...'
+            multiline
+            numberOfLines={4}
+            style={{ flex: 1 }}
+          />
+
+        </View>
       </View>
       
     </View>
+    </ScrollView>
+    </KeyboardAvoidingView>
   );
 }
 
 const styles = StyleSheet.create({
+  // general container styles
   container: {
     flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: 'flex-start',
+    justifyContent: 'flex-start',
     gap: 12,
   },
+  // Camera frame styles
   cameraFrame: {
-    flex: 1,
+    height: 'auto',
     width: '100%',
     paddingHorizontal: 24,
     paddingTop: 24,
-    alignItems: 'center',
+    alignItems: 'flex-start',
     justifyContent: 'flex-start',
     gap: 12,
   },
@@ -112,7 +155,6 @@ const styles = StyleSheet.create({
     gap: 8,
     alignItems: 'center',
   },
-
   centerCircleButton: {
     width: 80,
     height: 80,
@@ -128,23 +170,31 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     borderColor: '#999999',
   },
-
   button: {
     width: 48,
     height: 48,
-
     justifyContent: 'center',
     alignItems: 'center',
-
     backgroundColor: 'rgba(255, 255, 255, 0.2)',
-
     borderRadius: 9999,
   },
   
-  
-  
-  
-  
-  
-  
+  // bottom form styles
+  buttonForm: {
+    paddingHorizontal: 24,
+    width: '100%',
+  },
+  title: {
+    marginTop: 30,
+    fontFamily: Fonts.heading,
+    fontSize: 18,
+  },
+  inputContainer: {
+    marginTop: 12,
+    backgroundColor: '#e1e3DA',
+    height: 128,
+    borderRadius: 16,
+    padding: 12,
+  }
+
 });
