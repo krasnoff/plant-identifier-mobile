@@ -33,13 +33,12 @@ function LayoutStack() {
         headerTitleAlign: 'center',
         headerTitleStyle: {
           fontFamily: Fonts.heading,
-          fontWeight: 'bold',
-          fontSize: 24,
+          fontSize: 20,
           color: colors.text,
         },
       }}
     >
-      <Stack.Screen name="pages/search" options={{ title: 'Home' }} />
+      <Stack.Screen name="pages/search" options={{ title: 'The Living Archive' }} />
       <Stack.Screen name="pages/results" options={{ title: 'Results' }} />
     </Stack>
   );
