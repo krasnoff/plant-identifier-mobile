@@ -6,6 +6,7 @@ import { useTheme } from '../../context/theme-context';
 import { Colors, Fonts } from '../../constants/theme';
 import { CameraView, CameraType, useCameraPermissions } from 'expo-camera';
 import { useHeaderHeight } from '@react-navigation/elements';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function Search() {
   const router = useRouter();
@@ -17,6 +18,9 @@ export default function Search() {
 
   const [keyboardOpen, setKeyboardOpen] = useState(false);
   const headerHeight = useHeaderHeight(); // Adjust this value based on your header's actual height
+  const insets = useSafeAreaInsets();
+
+  const [keyboardMargin, setKeyboardMargin] = useState(0);
 
   useEffect(() => {
     const showSubscription = Keyboard.addListener('keyboardDidShow', () => {
@@ -25,6 +29,10 @@ export default function Search() {
     const hideSubscription = Keyboard.addListener('keyboardDidHide', () => {
       setKeyboardOpen(false);
     });
+
+    console.log('headerHeight', headerHeight);
+    console.log('insets', insets);
+    setKeyboardMargin(headerHeight - insets.top + insets.bottom);
 
     return () => {
       showSubscription.remove();
@@ -51,7 +59,7 @@ export default function Search() {
     <KeyboardAvoidingView
       style={{ flex: 1 }}
       behavior={Platform.OS === 'ios' ? 'padding' : (keyboardOpen ? 'height' : undefined)}
-      keyboardVerticalOffset={Platform.OS === 'ios' ? headerHeight : -90} // tweak this if needed
+      keyboardVerticalOffset={Platform.OS === 'ios' ? headerHeight : -keyboardMargin} // tweak this if needed
     >
     <ScrollView
       contentContainerStyle={{ flexGrow: 1, justifyContent: 'flex-end' }}
