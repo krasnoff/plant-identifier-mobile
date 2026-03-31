@@ -8,6 +8,9 @@ import { CameraView, CameraType, useCameraPermissions } from 'expo-camera';
 import { useHeaderHeight } from '@react-navigation/elements';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
+import SubmitButtonComponent from '@/assets/svg/submitButton';
+import FlashOnComponent from '@/assets/svg/flashOnComponent';
+import FlipCameraComponent from '@/assets/svg/flipCamera';
 
 export default function Search() {
   const router = useRouter();
@@ -31,8 +34,6 @@ export default function Search() {
       setKeyboardOpen(false);
     });
 
-    console.log('headerHeight', headerHeight);
-    console.log('insets', insets);
     setKeyboardMargin(headerHeight - insets.top + insets.bottom);
 
     return () => {
@@ -79,17 +80,19 @@ export default function Search() {
               <CameraView style={styles.cameraView} facing={facing} />
               <View style={styles.cameraOverlay}>
                 <Pressable
-                  style={[styles.button]}
+                  style={({ pressed }) => [styles.button, { opacity: pressed ? 0.86 : 1 }]}
+                  android_ripple={{ color: 'rgba(255, 255, 255, 0.32)', borderless: false }}
                   >
-                  
+                  <FlashOnComponent />
                 </Pressable>
                 <Pressable style={styles.centerCircleButton}>
                   <View style={styles.centerCircleInner} />
                 </Pressable>
                 <Pressable
-                  style={[styles.button]}
+                  style={({ pressed }) => [styles.button, { opacity: pressed ? 0.86 : 1 }]}
+                  android_ripple={{ color: 'rgba(255, 255, 255, 0.32)', borderless: false }}
                   >
-                  
+                  <FlipCameraComponent />
                 </Pressable>
               </View>
             </View>
@@ -122,7 +125,8 @@ export default function Search() {
             end={{ x: 1, y: 1 }}
             style={styles.gradient}
           >
-            <Text style={styles.text}>dssdfsd</Text>
+            <SubmitButtonComponent />
+            <Text style={styles.text}>Identify</Text>
           </LinearGradient>
         </Pressable>
       </View>
@@ -204,6 +208,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: 'rgba(255, 255, 255, 0.2)',
     borderRadius: 9999,
+    overflow: 'hidden',
   },
   
   // bottom form styles
@@ -252,8 +257,8 @@ const styles = StyleSheet.create({
   },
   text: {
     color: '#fff',
-    fontSize: 16,
-    fontWeight: '600',
+    fontSize: 18,
+    fontFamily: Fonts.heading
   },
 
 });
