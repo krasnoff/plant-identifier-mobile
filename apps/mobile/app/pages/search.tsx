@@ -9,8 +9,8 @@ import { useHeaderHeight } from '@react-navigation/elements';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import SubmitButtonComponent from '@/assets/svg/submitButton';
-import FlashOnComponent from '@/assets/svg/flashOnComponent';
 import FlipCameraComponent from '@/assets/svg/flipCamera';
+import FlashLightOnComponent from '@/assets/svg/flashLightOn';
 
 export default function Search() {
   const router = useRouter();
@@ -25,6 +25,8 @@ export default function Search() {
   const insets = useSafeAreaInsets();
 
   const [keyboardMargin, setKeyboardMargin] = useState(0);
+
+  const [flashLightOn, setFlashLightOn] = useState(false);
 
   useEffect(() => {
     const showSubscription = Keyboard.addListener('keyboardDidShow', () => {
@@ -77,13 +79,16 @@ export default function Search() {
         style={styles.cameraFrame}>
           <View style={styles.cameraShadow}>
             <View style={styles.cameraContainer}>
-              <CameraView style={styles.cameraView} facing={facing} />
+              <CameraView style={styles.cameraView} facing={facing} enableTorch={flashLightOn} />
               <View style={styles.cameraOverlay}>
                 <Pressable
                   style={({ pressed }) => [styles.button, { opacity: pressed ? 0.86 : 1 }]}
                   android_ripple={{ color: 'rgba(255, 255, 255, 0.32)', borderless: false }}
+                  onPress={() => {
+                    setFlashLightOn(!flashLightOn);
+                  }}
                   >
-                  <FlashOnComponent />
+                  <FlashLightOnComponent />
                 </Pressable>
                 <Pressable style={styles.centerCircleButton}>
                   <View style={styles.centerCircleInner} />
@@ -91,6 +96,9 @@ export default function Search() {
                 <Pressable
                   style={({ pressed }) => [styles.button, { opacity: pressed ? 0.86 : 1 }]}
                   android_ripple={{ color: 'rgba(255, 255, 255, 0.32)', borderless: false }}
+                  onPress={() => {
+                    setFacing((prev) => (prev === 'back' ? 'front' : 'back'));
+                  }}
                   >
                   <FlipCameraComponent />
                 </Pressable>
@@ -118,6 +126,7 @@ export default function Search() {
         <Pressable
           style={({ pressed }) => [styles.pressableContainer, { opacity: pressed ? 0.85 : 1 }]}
           android_ripple={{ color: 'rgba(255, 255, 255, 0.3)', borderless: false }}
+          onPress={() => router.push('/pages/results')}
         >
           <LinearGradient
             colors={['#0D631B', '#2E7D32']}
@@ -206,7 +215,7 @@ const styles = StyleSheet.create({
     height: 48,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    backgroundColor: 'rgba(0, 0, 0, 0.3)',
     borderRadius: 9999,
     overflow: 'hidden',
   },
