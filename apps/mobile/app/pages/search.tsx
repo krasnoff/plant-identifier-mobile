@@ -52,7 +52,7 @@ export default function Search() {
   if (!permission.granted) {
     // Camera permissions are not granted yet.
     return (
-      <View style={styles.container}>
+      <View style={styles.permissionViewContainer}>
         <Text style={{ color: colors.text }}>We need your permission to show the camera</Text>
         <Button onPress={requestPermission} title="grant permission" />
       </View>
@@ -147,6 +147,12 @@ export default function Search() {
 }
 
 const styles = StyleSheet.create({
+  permissionViewContainer: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 12,
+  },
   // general container styles
   container: {
     flex: 1,
