@@ -7,6 +7,7 @@ import { Colors, Fonts } from '../../constants/theme';
 import { CameraView, CameraType, useCameraPermissions } from 'expo-camera';
 import { useHeaderHeight } from '@react-navigation/elements';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { LinearGradient } from 'expo-linear-gradient';
 
 export default function Search() {
   const router = useRouter();
@@ -95,6 +96,7 @@ export default function Search() {
           </View>
       </View>
 
+      {/* input text view */}
       <View style={styles.buttonForm}>
         <Text style={styles.title}>Add details or ask a question</Text>
         <View style={styles.inputContainer}>
@@ -102,10 +104,27 @@ export default function Search() {
             placeholder='e.g Found near an oak tree, seems to have serrated edges...'
             multiline
             numberOfLines={4}
-            style={{ flex: 1 }}
+            style={ styles.inputText }
           />
 
         </View>
+      </View>
+
+      {/* pressable button */}
+      <View style={styles.pressableWrapper}>
+        <Pressable
+          style={({ pressed }) => [styles.pressableContainer, { opacity: pressed ? 0.85 : 1 }]}
+          android_ripple={{ color: 'rgba(255, 255, 255, 0.3)', borderless: false }}
+        >
+          <LinearGradient
+            colors={['#0D631B', '#2E7D32']}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={styles.gradient}
+          >
+            <Text style={styles.text}>dssdfsd</Text>
+          </LinearGradient>
+        </Pressable>
       </View>
       
     </View>
@@ -203,6 +222,38 @@ const styles = StyleSheet.create({
     height: 128,
     borderRadius: 16,
     padding: 12,
-  }
+    paddingTop: 5
+  },
+  inputText: {
+    flex: 1,
+    textAlignVertical: 'top',
+    fontFamily: Fonts.body,
+    fontSize: 16
+  },
+
+  // presable submit button styles can go here
+  pressableWrapper: {
+    marginTop: 24,
+    width: '100%',
+    paddingHorizontal: 24,
+  },
+  pressableContainer: {
+    height: 68,
+    borderRadius: 9999,
+    overflow: 'hidden',
+  },
+  gradient: {
+    flex: 1,
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 20,
+    gap: 12, // note: works on newer RN versions
+  },
+  text: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '600',
+  },
 
 });
