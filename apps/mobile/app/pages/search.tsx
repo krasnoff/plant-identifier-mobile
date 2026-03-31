@@ -59,7 +59,7 @@ export default function Search() {
     <KeyboardAvoidingView
       style={{ flex: 1 }}
       behavior={Platform.OS === 'ios' ? 'padding' : (keyboardOpen ? 'height' : undefined)}
-      keyboardVerticalOffset={Platform.OS === 'ios' ? headerHeight : -keyboardMargin} // tweak this if needed
+      keyboardVerticalOffset={Platform.OS === 'ios' ? headerHeight : -keyboardMargin - 10} // tweak this if needed
     >
     <ScrollView
       contentContainerStyle={{ flexGrow: 1, justifyContent: 'flex-end' }}
