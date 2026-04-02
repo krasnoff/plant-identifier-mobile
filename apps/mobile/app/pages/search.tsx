@@ -1,16 +1,17 @@
 import { useRouter } from 'expo-router';
 import { Text, View, StyleSheet, Pressable, Button, TextInput, KeyboardAvoidingView, Platform, ScrollView, Keyboard } from 'react-native';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { StatusBar } from 'expo-status-bar';
 import { useTheme } from '../../context/theme-context';
 import { Colors, Fonts } from '../../constants/theme';
-import { CameraView, CameraType, useCameraPermissions } from 'expo-camera';
+import { CameraView, CameraType, useCameraPermissions, CameraCapturedPicture } from 'expo-camera';
 import { useHeaderHeight } from '@react-navigation/elements';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import SubmitButtonComponent from '@/assets/svg/submitButton';
 import FlipCameraComponent from '@/assets/svg/flipCamera';
 import FlashLightOnComponent from '@/assets/svg/flashLightOn';
+import FadeModal from '@/components/fade-modal';
 
 export default function Search() {
   const router = useRouter();
@@ -27,6 +28,10 @@ export default function Search() {
   const [keyboardMargin, setKeyboardMargin] = useState(0);
 
   const [flashLightOn, setFlashLightOn] = useState(false);
+
+  const [open, setOpen] = useState(false);
+
+  const cameraRef = useRef<CameraView | null>(null);
 
   useEffect(() => {
     const showSubscription = Keyboard.addListener('keyboardDidShow', () => {
@@ -59,6 +64,26 @@ export default function Search() {
     );
   }
 
+  const takePhotoAsBlob = async () => {
+    if (!cameraRef.current) return;
+
+    // 1) Capture image
+    const photo: CameraCapturedPicture = await cameraRef.current.takePictureAsync({
+      quality: 0.8,
+      base64: false,
+    });
+
+    // photo.uri -> cached local file path
+    console.log('photo uri:', photo.uri);
+
+    // 2) Convert file URI to Blob
+    const response = await fetch(photo.uri);
+    const blob = await response.blob();
+
+    console.log('blob:', blob);
+    return blob;
+  };
+
   return (
     <KeyboardAvoidingView
       style={{ flex: 1 }}
@@ -79,7 +104,11 @@ export default function Search() {
         style={styles.cameraFrame}>
           <View style={styles.cameraShadow}>
             <View style={styles.cameraContainer}>
-              <CameraView style={styles.cameraView} facing={facing} enableTorch={flashLightOn} />
+              <CameraView 
+                style={styles.cameraView} 
+                facing={facing} 
+                enableTorch={flashLightOn} 
+                ref={cameraRef} />
               <View style={styles.cameraOverlay}>
                 <Pressable
                   style={({ pressed }) => [styles.button, { opacity: pressed ? 0.86 : 1 }]}
@@ -90,7 +119,10 @@ export default function Search() {
                   >
                   <FlashLightOnComponent />
                 </Pressable>
-                <Pressable style={styles.centerCircleButton}>
+                <Pressable style={styles.centerCircleButton} onPress={() => {
+                  console.log('capture photo');
+                  takePhotoAsBlob();
+                }}>
                   <View style={styles.centerCircleInner} />
                 </Pressable>
                 <Pressable
@@ -126,7 +158,7 @@ export default function Search() {
         <Pressable
           style={({ pressed }) => [styles.pressableContainer, { opacity: pressed ? 0.85 : 1 }]}
           android_ripple={{ color: 'rgba(255, 255, 255, 0.3)', borderless: false }}
-          onPress={() => router.push('/pages/results')}
+          onPress={() => setOpen(true)}
         >
           <LinearGradient
             colors={['#0D631B', '#2E7D32']}
@@ -142,6 +174,7 @@ export default function Search() {
       
     </View>
     </ScrollView>
+    <FadeModal visible={open} onClose={() => setOpen(false)} />
     </KeyboardAvoidingView>
   );
 }
