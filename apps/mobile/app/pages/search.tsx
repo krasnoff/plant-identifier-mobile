@@ -12,6 +12,8 @@ import SubmitButtonComponent from '@/assets/svg/submitButton';
 import FlipCameraComponent from '@/assets/svg/flipCamera';
 import FlashLightOnComponent from '@/assets/svg/flashLightOn';
 import FadeModal from '@/components/fade-modal';
+import { Image } from 'expo-image';
+import UndoImageComponent from '@/assets/svg/undo';
 
 export default function Search() {
   const router = useRouter();
@@ -32,6 +34,7 @@ export default function Search() {
   const [open, setOpen] = useState(false);
 
   const cameraRef = useRef<CameraView | null>(null);
+  const [imageUri, setImageUri] = useState<string | null>(null);
 
   useEffect(() => {
     const showSubscription = Keyboard.addListener('keyboardDidShow', () => {
@@ -73,6 +76,9 @@ export default function Search() {
       base64: false,
     });
 
+    // set image URI to display captured photo (for testing)
+    setImageUri(photo.uri);
+
     // photo.uri -> cached local file path
     console.log('photo uri:', photo.uri);
 
@@ -100,44 +106,66 @@ export default function Search() {
         style={colorScheme === 'dark' ? 'light' : 'dark'}
       />
       {/* Camera view with overlay buttons */}
-      <View
-        style={styles.cameraFrame}>
-          <View style={styles.cameraShadow}>
-            <View style={styles.cameraContainer}>
-              <CameraView 
-                style={styles.cameraView} 
-                facing={facing} 
-                enableTorch={flashLightOn} 
-                ref={cameraRef} />
-              <View style={styles.cameraOverlay}>
-                <Pressable
-                  style={({ pressed }) => [styles.button, { opacity: pressed ? 0.86 : 1 }]}
-                  android_ripple={{ color: 'rgba(255, 255, 255, 0.32)', borderless: false }}
-                  onPress={() => {
-                    setFlashLightOn(!flashLightOn);
-                  }}
-                  >
-                  <FlashLightOnComponent />
-                </Pressable>
-                <Pressable style={styles.centerCircleButton} onPress={() => {
-                  console.log('capture photo');
-                  takePhotoAsBlob();
-                }}>
-                  <View style={styles.centerCircleInner} />
-                </Pressable>
-                <Pressable
-                  style={({ pressed }) => [styles.button, { opacity: pressed ? 0.86 : 1 }]}
-                  android_ripple={{ color: 'rgba(255, 255, 255, 0.32)', borderless: false }}
-                  onPress={() => {
-                    setFacing((prev) => (prev === 'back' ? 'front' : 'back'));
-                  }}
-                  >
-                  <FlipCameraComponent />
-                </Pressable>
+      {!imageUri && (
+        <View
+          style={styles.cameraFrame}>
+            <View style={styles.cameraShadow}>
+              <View style={styles.cameraContainer}>
+                <CameraView 
+                  style={styles.cameraView} 
+                  facing={facing} 
+                  enableTorch={flashLightOn} 
+                  ref={cameraRef} />
+                <View style={styles.cameraOverlay}>
+                  <Pressable
+                    style={({ pressed }) => [styles.button, { opacity: pressed ? 0.86 : 1 }]}
+                    android_ripple={{ color: 'rgba(255, 255, 255, 0.32)', borderless: false }}
+                    onPress={() => {
+                      setFlashLightOn(!flashLightOn);
+                    }}
+                    >
+                    <FlashLightOnComponent />
+                  </Pressable>
+                  <Pressable style={styles.centerCircleButton} onPress={() => {
+                    console.log('capture photo');
+                    takePhotoAsBlob();
+                  }}>
+                    <View style={styles.centerCircleInner} />
+                  </Pressable>
+                  <Pressable
+                    style={({ pressed }) => [styles.button, { opacity: pressed ? 0.86 : 1 }]}
+                    android_ripple={{ color: 'rgba(255, 255, 255, 0.32)', borderless: false }}
+                    onPress={() => {
+                      setFacing((prev) => (prev === 'back' ? 'front' : 'back'));
+                    }}
+                    >
+                    <FlipCameraComponent />
+                  </Pressable>
+                </View>
               </View>
             </View>
+        </View>
+      )}
+      {imageUri && (
+        <View style={styles.previewContainer}>
+          <Image
+            source={{ uri: imageUri }}
+            style={styles.preview}
+            contentFit="contain"
+          />
+          <View style={styles.cameraOverlay}>
+            <View />
+            <Pressable style={styles.centerCircleButton} onPress={() => {
+              console.log('undo photo');
+              setImageUri(null);
+            }}>
+              <UndoImageComponent />
+            </Pressable>
+            <View />
           </View>
-      </View>
+        </View>
+      )}
+
 
       {/* input text view */}
       <View style={styles.buttonForm}>
@@ -185,6 +213,22 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: 12,
+  },
+  // preview picture styles
+  previewContainer: {
+    width: '100%',
+    height: 427,
+    marginBottom: 24,
+    paddingTop: 24,
+    borderRadius: 32,
+    
+  },
+  preview: {
+    width: '100%',
+    height: 427,
+    marginBottom: 24,
+    paddingTop: 24,
+    borderRadius: 32,
   },
   // general container styles
   container: {
