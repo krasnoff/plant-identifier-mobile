@@ -10,10 +10,14 @@
     "check-types": "tsc --noEmit -p tsconfig.json"
   },
   "dependencies": {
+    "@ai-sdk/google": "^3.0.57",
     "@repo/configs": "workspace:*",
     "@repo/types": "workspace:*",
     "@repo/utils": "workspace:*",
-    "express": "^5.1.0"
+    "ai": "^6.0.145",
+    "dotenv": "^17.4.0",
+    "express": "^5.1.0",
+    "zod": "^4.3.6"
   },
   "devDependencies": {
     "@types/express": "^5.0.3",

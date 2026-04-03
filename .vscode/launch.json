@@ -16,6 +16,22 @@
       "env": {
         "TS_NODE_FILES": "true"
       }
+    },
+    {
+      "name": "API: Debug (Direct ts-node)",
+      "type": "node",
+      "request": "launch",
+      "cwd": "${workspaceFolder}/apps/api",
+      "program": "${workspaceFolder}/apps/api/src/index.ts",
+      "runtimeArgs": ["-r", "ts-node/register"],
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen",
+      "skipFiles": ["<node_internals>/**"],
+      "sourceMaps": true,
+      "env": {
+        "TS_NODE_FILES": "true",
+        "NODE_ENV": "development"
+      }
     }
   ]
 }

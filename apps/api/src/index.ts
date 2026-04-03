@@ -1,9 +1,12 @@
 import express from "express";
+import 'dotenv/config';
+import chatController from "./controllers/chat+api";
 
 const app = express();
 const port = Number(process.env.PORT) || 3001;
 
 app.use(express.json());
+app.use("/api", chatController);
 
 app.get("/health", (_req, res) => {
   res.status(200).json({ status: "ok" });
