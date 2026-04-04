@@ -2,6 +2,7 @@ import { createGoogleGenerativeAI } from '@ai-sdk/google';
 import { generateText } from 'ai';
 import express, { Request, Response } from "express";
 import 'dotenv/config';
+import { systemPrompt } from '../lib/system_prompt';
 
 const router = express.Router();
 
@@ -12,8 +13,6 @@ const google = createGoogleGenerativeAI({
 router.post("/chat", async (request: Request, response: Response) => {
   const { messages } = request.body as { messages?: any[] };
 
-  console.log('Received request body:', request.body);
-
   if (!Array.isArray(messages)) {
     return response.status(400).json({ error: 'Invalid request body. Expected { messages: UIMessage[] }.' });
   }
@@ -22,22 +21,19 @@ router.post("/chat", async (request: Request, response: Response) => {
     return response.status(500).json({ error: 'GOOGLE_GENERATIVE_AI_API_KEY is not set.' });
   }
 
-  console.log('Received messages:', messages);
-
   try {
-    // Simplify to just get the latest user message
-    const lastMessage = messages[messages.length - 1];
-    const prompt = lastMessage?.content || "Help me identify a plant";
-
-    console.log('Using prompt:', prompt);
+    // Transform UIMessages to ModelMessages format
+    const modelMessages = messages.map((message) => ({
+      role: message.role,
+      content: message.parts,
+    }));
 
     const result = await generateText({
       model: google('gemini-2.5-flash-lite'),
-      prompt: `You are a helpful plant identification assistant. User says: "${prompt}"`
+      system: systemPrompt,
+      messages: modelMessages,
     });
 
-    console.log('Generated response:', result.text);
-    
     return response.json({ 
       response: result.text,
       usage: result.usage 
