@@ -14,6 +14,7 @@ import FlashLightOnComponent from '@/assets/svg/flashLightOn';
 import FadeModal from '@/components/fade-modal';
 import { Image } from 'expo-image';
 import UndoImageComponent from '@/assets/svg/undo';
+import * as ImageManipulator from 'expo-image-manipulator';
 
 export default function Search() {
   const router = useRouter();
@@ -82,12 +83,34 @@ export default function Search() {
     // photo.uri -> cached local file path
     console.log('photo uri:', photo.uri);
 
-    // 2) Convert file URI to Blob
-    const response = await fetch(photo.uri);
-    const blob = await response.blob();
-
-    console.log('blob:', blob);
-    return blob;
+    // 2) Compress and resize image using expo-image-manipulator
+    try {
+      const manipulatedImage = await ImageManipulator.manipulateAsync(
+        photo.uri,
+        [{ resize: { width: 500 } }], // resize to max width of 500px, height will be proportional
+        { 
+          compress: 0.8, // compression quality (0-1)
+          format: ImageManipulator.SaveFormat.JPEG 
+        }
+      );
+      
+      console.log('Original URI:', photo.uri);
+      console.log('Compressed URI:', manipulatedImage.uri);
+      console.log('New dimensions:', manipulatedImage.width, 'x', manipulatedImage.height);
+      
+      // Convert compressed image URI to Blob if needed
+      const response = await fetch(manipulatedImage.uri);
+      const compressedBlob = await response.blob();
+      console.log(`Compressed size: ${compressedBlob.size / 1024 / 1024} MB`);
+      
+      return compressedBlob;
+    } catch (error) {
+      console.log('Image compression error:', error);
+      // Fallback to original blob
+      const response = await fetch(photo.uri);
+      const blob = await response.blob();
+      return blob;
+    }
   };
 
   return (
