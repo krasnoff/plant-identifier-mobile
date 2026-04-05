@@ -15,9 +15,12 @@ import FadeModal from '@/components/fade-modal';
 import { Image } from 'expo-image';
 import UndoImageComponent from '@/assets/svg/undo';
 import * as ImageManipulator from 'expo-image-manipulator';
+import { Methods } from '@/enums/methods.enums';
+import useGetData from '@/hooks/useGetData';
 
 export default function Search() {
   const router = useRouter();
+  const { data, error, loading, fetchData } = useGetData('chat', Methods.POST);
   const { colorScheme } = useTheme();
   const colors = Colors[colorScheme];
 
@@ -37,6 +40,9 @@ export default function Search() {
   const cameraRef = useRef<CameraView | null>(null);
   const [imageUri, setImageUri] = useState<string | null>(null);
   const [imageBase64, setImageBase64] = useState<string | null>(null);
+  const [userText, setUserText] = useState<string>('');
+
+
 
   useEffect(() => {
     const showSubscription = Keyboard.addListener('keyboardDidShow', () => {
@@ -54,20 +60,22 @@ export default function Search() {
     };
   }, []);
 
-  if (!permission) {
-    // Camera permissions are still loading.
-    return <View />;
-  }
+  useEffect(() => {
+    if (data && data.response) {
+      console.log('API response:', data);
+      router.push({
+        pathname: '/pages/results',
+        params: {
+          result: JSON.stringify(data) // Pass the entire response as a string
+        }
+      });
+    } else if (error) {
+      console.error('API error:', error);
+      // Handle API error response
+    }
 
-  if (!permission.granted) {
-    // Camera permissions are not granted yet.
-    return (
-      <View style={styles.permissionViewContainer}>
-        <Text style={{ color: colors.text }}>We need your permission to show the camera</Text>
-        <Button onPress={requestPermission} title="grant permission" />
-      </View>
-    );
-  }
+    setOpen(false);
+  }, [data, error]);
 
   const takePhotoAsBase64 = async () => {
     if (!cameraRef.current) return;
@@ -147,6 +155,32 @@ export default function Search() {
     });
   }
 
+  const handleSubmit = () => {
+    console.log('handleSubmit called with base64 image:');
+    setOpen(true);
+
+    const body = {
+      messages: [  // ✅ Now it's an array as expected by the API
+        {
+          role: 'user',
+          parts: [
+            {
+              type: 'image',
+              image: imageBase64 || '', // send the base64 string of the captured image
+              mediaType: 'image/jpeg'
+            }, 
+            {
+              type: 'text',
+              text: userText // User's input from TextInput
+            }
+          ]
+        }
+      ]
+    };
+
+    fetchData(body);
+  }
+
   return (
     <KeyboardAvoidingView
       style={{ flex: 1 }}
@@ -162,100 +196,117 @@ export default function Search() {
         backgroundColor={colors.background}
         style={colorScheme === 'dark' ? 'light' : 'dark'}
       />
-      {/* Camera view with overlay buttons */}
-      {!imageUri && (
-        <View
-          style={styles.cameraFrame}>
-            <View style={styles.cameraShadow}>
-              <View style={styles.cameraContainer}>
-                <CameraView 
-                  style={styles.cameraView} 
-                  facing={facing} 
-                  enableTorch={flashLightOn} 
-                  ref={cameraRef} />
-                <View style={styles.cameraOverlay}>
-                  <Pressable
-                    style={({ pressed }) => [styles.button, { opacity: pressed ? 0.86 : 1 }]}
-                    android_ripple={{ color: 'rgba(255, 255, 255, 0.32)', borderless: false }}
-                    onPress={() => {
-                      setFlashLightOn(!flashLightOn);
-                    }}
-                    >
-                    <FlashLightOnComponent />
-                  </Pressable>
-                  <Pressable style={styles.centerCircleButton} onPress={() => {
-                    console.log('capture photo');
-                    handleCameraShoot();
-                  }}>
-                    <View style={styles.centerCircleInner} />
-                  </Pressable>
-                  <Pressable
-                    style={({ pressed }) => [styles.button, { opacity: pressed ? 0.86 : 1 }]}
-                    android_ripple={{ color: 'rgba(255, 255, 255, 0.32)', borderless: false }}
-                    onPress={() => {
-                      setFacing((prev) => (prev === 'back' ? 'front' : 'back'));
-                    }}
-                    >
-                    <FlipCameraComponent />
-                  </Pressable>
+      
+      {/* Handle camera permissions loading */}
+      {!permission && <View />}
+      
+      {/* Handle camera permissions not granted */}
+      {permission && !permission.granted && (
+        <View style={styles.permissionViewContainer}>
+          <Text style={{ color: colors.text }}>We need your permission to show the camera</Text>
+          <Button onPress={requestPermission} title="grant permission" />
+        </View>
+      )}
+      
+      {/* Main camera functionality when permissions are granted */}
+      {permission && permission.granted && (
+        <>
+          {/* Camera view with overlay buttons */}
+          {!imageUri && (
+            <View
+              style={styles.cameraFrame}>
+                <View style={styles.cameraShadow}>
+                  <View style={styles.cameraContainer}>
+                    <CameraView 
+                      style={styles.cameraView} 
+                      facing={facing} 
+                      enableTorch={flashLightOn} 
+                      ref={cameraRef} />
+                    <View style={styles.cameraOverlay}>
+                      <Pressable
+                        style={({ pressed }) => [styles.button, { opacity: pressed ? 0.86 : 1 }]}
+                        android_ripple={{ color: 'rgba(255, 255, 255, 0.32)', borderless: false }}
+                        onPress={() => {
+                          setFlashLightOn(!flashLightOn);
+                        }}
+                        >
+                        <FlashLightOnComponent />
+                      </Pressable>
+                      <Pressable style={styles.centerCircleButton} onPress={() => {
+                        console.log('capture photo');
+                        handleCameraShoot();
+                      }}>
+                        <View style={styles.centerCircleInner} />
+                      </Pressable>
+                      <Pressable
+                        style={({ pressed }) => [styles.button, { opacity: pressed ? 0.86 : 1 }]}
+                        android_ripple={{ color: 'rgba(255, 255, 255, 0.32)', borderless: false }}
+                        onPress={() => {
+                          setFacing((prev) => (prev === 'back' ? 'front' : 'back'));
+                        }}
+                        >
+                        <FlipCameraComponent />
+                      </Pressable>
+                    </View>
+                  </View>
                 </View>
+            </View>
+          )}
+          {imageUri && (
+            <View style={styles.previewContainer}>
+              <Image
+                source={{ uri: imageUri }}
+                style={styles.preview}
+                contentFit="contain"
+              />
+              <View style={styles.cameraOverlay}>
+                <View />
+                <Pressable style={styles.centerCircleButton} onPress={() => {
+                  console.log('undo photo');
+                  setImageUri(null);
+                }}>
+                  <UndoImageComponent />
+                </Pressable>
+                <View />
               </View>
             </View>
-        </View>
-      )}
-      {imageUri && (
-        <View style={styles.previewContainer}>
-          <Image
-            source={{ uri: imageUri }}
-            style={styles.preview}
-            contentFit="contain"
-          />
-          <View style={styles.cameraOverlay}>
-            <View />
-            <Pressable style={styles.centerCircleButton} onPress={() => {
-              console.log('undo photo');
-              setImageUri(null);
-            }}>
-              <UndoImageComponent />
-            </Pressable>
-            <View />
+          )}
+
+          {/* input text view */}
+          <View style={styles.buttonForm}>
+            <Text style={styles.title}>Add details or ask a question</Text>
+            <View style={styles.inputContainer}>
+              <TextInput 
+                placeholder='e.g Found near an oak tree, seems to have serrated edges...'
+                multiline
+                numberOfLines={4}
+                style={ styles.inputText }
+                value={userText}
+                onChangeText={setUserText}
+              />
+            </View>
           </View>
-        </View>
+
+          {/* pressable button */}
+          <View style={styles.pressableWrapper}>
+            <Pressable
+              style={({ pressed }) => [styles.pressableContainer, { opacity: pressed ? 0.85 : 1 }]}
+              android_ripple={{ color: 'rgba(255, 255, 255, 0.3)', borderless: false }}
+              onPress={() => handleSubmit()}
+            >
+              <LinearGradient
+                colors={['#0D631B', '#2E7D32']}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={styles.gradient}
+              >
+                <SubmitButtonComponent />
+                <Text style={styles.text}>Identify</Text>
+              </LinearGradient>
+            </Pressable>
+          </View>
+        </>
       )}
-
-
-      {/* input text view */}
-      <View style={styles.buttonForm}>
-        <Text style={styles.title}>Add details or ask a question</Text>
-        <View style={styles.inputContainer}>
-          <TextInput 
-            placeholder='e.g Found near an oak tree, seems to have serrated edges...'
-            multiline
-            numberOfLines={4}
-            style={ styles.inputText }
-          />
-
-        </View>
-      </View>
-
-      {/* pressable button */}
-      <View style={styles.pressableWrapper}>
-        <Pressable
-          style={({ pressed }) => [styles.pressableContainer, { opacity: pressed ? 0.85 : 1 }]}
-          android_ripple={{ color: 'rgba(255, 255, 255, 0.3)', borderless: false }}
-          onPress={() => setOpen(true)}
-        >
-          <LinearGradient
-            colors={['#0D631B', '#2E7D32']}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
-            style={styles.gradient}
-          >
-            <SubmitButtonComponent />
-            <Text style={styles.text}>Identify</Text>
-          </LinearGradient>
-        </Pressable>
-      </View>
       
     </View>
     </ScrollView>
