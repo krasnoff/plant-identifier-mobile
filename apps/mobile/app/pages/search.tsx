@@ -80,9 +80,6 @@ export default function Search() {
     // set image URI to display captured photo (for testing)
     setImageUri(photo.uri);
 
-    // photo.uri -> cached local file path
-    console.log('photo uri:', photo.uri);
-
     // 2) Compress and resize image using expo-image-manipulator
     try {
       const manipulatedImage = await ImageManipulator.manipulateAsync(
@@ -95,12 +92,8 @@ export default function Search() {
         }
       );
       
-      console.log('Original URI:', photo.uri);
-      console.log('Compressed URI:', manipulatedImage.uri);
-      console.log('New dimensions:', manipulatedImage.width, 'x', manipulatedImage.height);
-      console.log('Manipulated image object:', manipulatedImage); // Debug the full object
-      
-      // Return the base64 string
+         
+      // 3) Return the base64 string
       const base64String = manipulatedImage.base64;
       console.log('Base64 string exists:', !!base64String); // Debug if base64 exists
       console.log('Base64 string type:', typeof base64String); // Debug type
