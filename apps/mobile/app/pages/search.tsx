@@ -95,14 +95,9 @@ export default function Search() {
          
       // 3) Return the base64 string
       const base64String = manipulatedImage.base64;
-      console.log('Base64 string exists:', !!base64String); // Debug if base64 exists
-      console.log('Base64 string type:', typeof base64String); // Debug type
-      
       if (base64String) {
-        console.log(`Base64 string length: ${base64String.length}`);
         return base64String;
       } else {
-        console.log('Base64 not available, converting URI to base64...');
         // Convert the manipulated image URI to base64
         const response = await fetch(manipulatedImage.uri);
         const blob = await response.blob();
