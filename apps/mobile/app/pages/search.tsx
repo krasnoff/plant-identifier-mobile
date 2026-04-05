@@ -36,6 +36,7 @@ export default function Search() {
 
   const cameraRef = useRef<CameraView | null>(null);
   const [imageUri, setImageUri] = useState<string | null>(null);
+  const [imageBase64, setImageBase64] = useState<string | null>(null);
 
   useEffect(() => {
     const showSubscription = Keyboard.addListener('keyboardDidShow', () => {
@@ -133,6 +134,19 @@ export default function Search() {
     }
   };
 
+  const handleCameraShoot = () => {
+    takePhotoAsBase64().then((base64) => {
+      if (!base64) {
+        console.error('Failed to capture photo as base64');
+        return;
+      }
+      setImageBase64(base64);
+      // You can now send this base64 string to your backend or use it as needed
+    }).catch((error) => {
+      console.error('Error capturing photo:', error);
+    });
+  }
+
   return (
     <KeyboardAvoidingView
       style={{ flex: 1 }}
@@ -171,7 +185,7 @@ export default function Search() {
                   </Pressable>
                   <Pressable style={styles.centerCircleButton} onPress={() => {
                     console.log('capture photo');
-                    takePhotoAsBase64();
+                    handleCameraShoot();
                   }}>
                     <View style={styles.centerCircleInner} />
                   </Pressable>
