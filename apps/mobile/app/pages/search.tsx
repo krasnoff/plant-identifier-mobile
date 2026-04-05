@@ -68,7 +68,7 @@ export default function Search() {
     );
   }
 
-  const takePhotoAsBlob = async () => {
+  const takePhotoAsBase64 = async () => {
     if (!cameraRef.current) return;
 
     // 1) Capture image
@@ -90,26 +90,58 @@ export default function Search() {
         [{ resize: { width: 500 } }], // resize to max width of 500px, height will be proportional
         { 
           compress: 0.8, // compression quality (0-1)
-          format: ImageManipulator.SaveFormat.JPEG 
+          format: ImageManipulator.SaveFormat.JPEG,
+          base64: true // Get base64 string directly
         }
       );
       
       console.log('Original URI:', photo.uri);
       console.log('Compressed URI:', manipulatedImage.uri);
       console.log('New dimensions:', manipulatedImage.width, 'x', manipulatedImage.height);
+      console.log('Manipulated image object:', manipulatedImage); // Debug the full object
       
-      // Convert compressed image URI to Blob if needed
-      const response = await fetch(manipulatedImage.uri);
-      const compressedBlob = await response.blob();
-      console.log(`Compressed size: ${compressedBlob.size / 1024 / 1024} MB`);
+      // Return the base64 string
+      const base64String = manipulatedImage.base64;
+      console.log('Base64 string exists:', !!base64String); // Debug if base64 exists
+      console.log('Base64 string type:', typeof base64String); // Debug type
       
-      return compressedBlob;
+      if (base64String) {
+        console.log(`Base64 string length: ${base64String.length}`);
+        return base64String;
+      } else {
+        console.log('Base64 not available, converting URI to base64...');
+        // Convert the manipulated image URI to base64
+        const response = await fetch(manipulatedImage.uri);
+        const blob = await response.blob();
+        return new Promise<string>((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onloadend = () => {
+            const base64 = reader.result as string;
+            // Remove data URL prefix to get just the base64 string
+            const base64String = base64.split(',')[1];
+            resolve(base64String);
+          };
+          reader.onerror = reject;
+          reader.readAsDataURL(blob);
+        });
+      }
+      
     } catch (error) {
       console.log('Image compression error:', error);
-      // Fallback to original blob
+      // Fallback: convert original image to base64
       const response = await fetch(photo.uri);
       const blob = await response.blob();
-      return blob;
+      return new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          const base64 = reader.result as string;
+          // Remove data URL prefix to get just the base64 string
+          const base64String = base64.split(',')[1];
+          resolve(base64String);
+        };
+        reader.onerror = reject;
+        reader.readAsDataURL(blob);
+      });
     }
   };
 
@@ -151,7 +183,7 @@ export default function Search() {
                   </Pressable>
                   <Pressable style={styles.centerCircleButton} onPress={() => {
                     console.log('capture photo');
-                    takePhotoAsBlob();
+                    takePhotoAsBase64();
                   }}>
                     <View style={styles.centerCircleInner} />
                   </Pressable>
