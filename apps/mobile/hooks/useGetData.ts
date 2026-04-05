@@ -13,9 +13,6 @@ const useGetData = (url: string, method: Methods = Methods.GET) => {
         try {
             const fullUrl = process.env.EXPO_PUBLIC_BASE_URL + url
             
-            console.log('Making request to:', fullUrl);
-            console.log('Request body:', JSON.stringify(body, null, 2));
-            
             const response = await axios({
                 method: method,
                 url: fullUrl,
@@ -24,7 +21,6 @@ const useGetData = (url: string, method: Methods = Methods.GET) => {
                 },
                 data: body,
             });
-            console.log('Response:', response.data);
             setData(response.data);
         } catch (err: any) {
             console.error("Error fetching data:", err.response?.data || err.message);

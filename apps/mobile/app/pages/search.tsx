@@ -62,7 +62,6 @@ export default function Search() {
 
   useEffect(() => {
     if (data && data.response) {
-      console.log('API response:', data);
       router.push({
         pathname: '/pages/results',
         params: {
@@ -156,7 +155,6 @@ export default function Search() {
   }
 
   const handleSubmit = () => {
-    console.log('handleSubmit called with base64 image:');
     setOpen(true);
 
     const body = {
@@ -233,7 +231,6 @@ export default function Search() {
                         <FlashLightOnComponent />
                       </Pressable>
                       <Pressable style={styles.centerCircleButton} onPress={() => {
-                        console.log('capture photo');
                         handleCameraShoot();
                       }}>
                         <View style={styles.centerCircleInner} />
@@ -262,7 +259,6 @@ export default function Search() {
               <View style={styles.cameraOverlay}>
                 <View />
                 <Pressable style={styles.centerCircleButton} onPress={() => {
-                  console.log('undo photo');
                   setImageUri(null);
                 }}>
                   <UndoImageComponent />
