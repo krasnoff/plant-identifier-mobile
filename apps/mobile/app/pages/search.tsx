@@ -65,7 +65,8 @@ export default function Search() {
       router.push({
         pathname: '/pages/results',
         params: {
-          result: JSON.stringify(data) // Pass the entire response as a string
+          result: JSON.stringify(data), // Pass the entire response as a string
+          imageUri: imageUri || '' // Pass the image URI if needed on the results page
         }
       });
     } else if (error) {

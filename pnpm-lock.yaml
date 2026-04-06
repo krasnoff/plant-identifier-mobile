@@ -23,6 +23,9 @@ importers:
       '@ai-sdk/google':
         specifier: ^3.0.57
         version: 3.0.57(zod@4.3.6)
+      '@ai-sdk/openai':
+        specifier: ^3.0.50
+        version: 3.0.50(zod@4.3.6)
       '@repo/configs':
         specifier: workspace:*
         version: link:../../packages/configs
@@ -206,6 +209,12 @@ packages:
 
   '@ai-sdk/google@3.0.57':
     resolution: {integrity: sha512-ojbYWB1loG8EGdfOWCbbtasoSwfjsGbOt2I1uPBLmoIBOa7EtUuYP4SujxHADZJFg2h08oUt4Dcw+1hJsjlF6A==}
+    engines: {node: '>=18'}
+    peerDependencies:
+      zod: ^3.25.76 || ^4.1.8
+
+  '@ai-sdk/openai@3.0.50':
+    resolution: {integrity: sha512-7M7bklrS+gckzPdpQpC3iG5aN5aQPRJdAJQ5jt7sEgYCqDgUuef9x4Nd570+ghIfKTZvV6tSqeeTuD6De/bZig==}
     engines: {node: '>=18'}
     peerDependencies:
       zod: ^3.25.76 || ^4.1.8
@@ -4700,6 +4709,12 @@ snapshots:
       zod: 4.3.6
 
   '@ai-sdk/google@3.0.57(zod@4.3.6)':
+    dependencies:
+      '@ai-sdk/provider': 3.0.8
+      '@ai-sdk/provider-utils': 4.0.22(zod@4.3.6)
+      zod: 4.3.6
+
+  '@ai-sdk/openai@3.0.50(zod@4.3.6)':
     dependencies:
       '@ai-sdk/provider': 3.0.8
       '@ai-sdk/provider-utils': 4.0.22(zod@4.3.6)

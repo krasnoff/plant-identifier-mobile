@@ -1,14 +1,10 @@
-import { createGoogleGenerativeAI } from '@ai-sdk/google';
+import { openai } from '@ai-sdk/openai';
 import { generateText } from 'ai';
 import express, { Request, Response } from "express";
 import 'dotenv/config';
 import { systemPrompt } from '../lib/system_prompt';
 
 const router = express.Router();
-
-const google = createGoogleGenerativeAI({
-  apiKey: process.env.GOOGLE_GENERATIVE_AI_API_KEY || '',
-});
 
 router.post("/chat", async (request: Request, response: Response) => {
   const { messages } = request.body as { messages?: any[] };
@@ -17,8 +13,8 @@ router.post("/chat", async (request: Request, response: Response) => {
     return response.status(400).json({ error: 'Invalid request body. Expected { messages: UIMessage[] }.' });
   }
 
-  if (!process.env.GOOGLE_GENERATIVE_AI_API_KEY) {
-    return response.status(500).json({ error: 'GOOGLE_GENERATIVE_AI_API_KEY is not set.' });
+  if (!process.env.OPENAI_API_KEY) {
+    return response.status(500).json({ error: 'OPENAI_API_KEY is not set.' });
   }
 
   try {
@@ -29,7 +25,7 @@ router.post("/chat", async (request: Request, response: Response) => {
     }));
 
     const result = await generateText({
-      model: google('gemini-2.5-flash-lite'),
+      model: openai('gpt-4o-mini'),
       system: systemPrompt,
       messages: modelMessages,
     });
