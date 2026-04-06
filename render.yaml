@@ -3,7 +3,7 @@ services:
     name: plant-identifier-api
     env: node
     rootDir: ./apps/api
-    buildCommand: pnpm install --frozen-lockfile && pnpm build:render
+    buildCommand: pnpm install && pnpm build:render
     startCommand: pnpm start
     plan: free
     envVars:
