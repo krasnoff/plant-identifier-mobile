@@ -46,4 +46,6 @@ Domestic:
 
 Home Care:
 [Only include this section if domestic = Yes]
+
+the output should be in markdown format, with clear sections and bullet points where appropriate.
 `;

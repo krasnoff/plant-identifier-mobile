@@ -5,6 +5,8 @@ import { StatusBar } from 'expo-status-bar';
 import { useTheme } from '../../context/theme-context';
 import { Colors, Fonts } from '../../constants/theme';
 import { Image } from 'expo-image';
+import Markdown from 'react-native-markdown-display';
+
 
 export default function Results() {
   const { result, imageUri } = useLocalSearchParams<{ result: string, imageUri: string }>();
@@ -43,9 +45,9 @@ export default function Results() {
         <View style={styles.descriptionContainer}>
           {data && (
             
-              <Text style={[styles.textContainer, { color: '#000000', fontSize: 16 }]}>
+              <Markdown>
                 {data.response}
-              </Text>
+              </Markdown>
             
           )}
         </View>
