@@ -318,6 +318,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: 12,
+    width: '100%'
   },
   // preview picture styles
   previewContainer: {
