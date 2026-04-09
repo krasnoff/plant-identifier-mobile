@@ -17,6 +17,13 @@ app.get("/", (_req, res) => {
   res.send("API is running");
 });
 
-app.listen(port, () => {
+const server = app.listen(port, () => {
   console.log(`Server listening on http://localhost:${port}`);
 });
+
+// Set infinite timeout
+server.timeout = 0; // Infinite request timeout
+server.headersTimeout = 0; // Infinite headers timeout
+server.keepAliveTimeout = 0; // Infinite keep alive timeout
+
+console.log("Server configured with infinite timeout");

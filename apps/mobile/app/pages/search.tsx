@@ -20,7 +20,7 @@ import useGetData from '@/hooks/useGetData';
 
 export default function Search() {
   const router = useRouter();
-  const { data, error, loading, fetchData } = useGetData('chat', Methods.POST);
+  const { data, error, loading, fetchData, cancelRequest } = useGetData('chat', Methods.POST);
   const { colorScheme } = useTheme();
   const colors = Colors[colorScheme];
 
@@ -180,6 +180,12 @@ export default function Search() {
     fetchData(body);
   }
 
+  const handleCloseModal = () => {
+    // Cancel any ongoing API request
+    cancelRequest();
+    setOpen(false);
+  }
+
   return (
     <KeyboardAvoidingView
       style={{ flex: 1 }}
@@ -307,7 +313,7 @@ export default function Search() {
       
     </View>
     </ScrollView>
-    <FadeModal visible={open} onClose={() => setOpen(false)} />
+    <FadeModal visible={open} onClose={handleCloseModal} />
     </KeyboardAvoidingView>
   );
 }
