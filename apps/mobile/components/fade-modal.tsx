@@ -101,7 +101,7 @@ export default function FadeModal({ visible, onClose }: Props) {
           <View><ActivityIndicator size="large" /></View>
 
           <Pressable style={styles.button} onPress={onClose}>
-            <Text style={styles.buttonText}>Close</Text>
+            <Text style={styles.buttonText}>Cancel Request</Text>
           </Pressable>
         </Animated.View>
       </View>
