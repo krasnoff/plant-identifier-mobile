@@ -93,7 +93,7 @@ export default function Search() {
     try {
       const manipulatedImage = await ImageManipulator.manipulateAsync(
         photo.uri,
-        [{ resize: { width: 500 } }], // resize to max width of 500px, height will be proportional
+        [{ resize: { width: 100 } }], // resize to max width of 500px, height will be proportional
         { 
           compress: 0.8, // compression quality (0-1)
           format: ImageManipulator.SaveFormat.JPEG,
