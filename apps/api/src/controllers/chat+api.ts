@@ -30,6 +30,7 @@ router.post("/chat", async (request: Request, response: Response) => {
       messages: modelMessages,
     });
 
+    // console.log(result.text)
     return response.json({ 
       response: result.text,
       usage: result.usage 

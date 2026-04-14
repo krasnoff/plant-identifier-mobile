@@ -45,7 +45,16 @@ export default function Results() {
         <View style={styles.descriptionContainer}>
           {data && (
             
-              <Markdown>
+              <Markdown
+                style={{
+                  body: { fontFamily: Fonts.body },
+                  paragraph: { fontFamily: Fonts.body },
+                  text: { fontFamily: Fonts.body },
+                  heading1: { fontFamily: Fonts.heading },
+                  heading2: { fontFamily: Fonts.headingSemiBold },
+                  heading3: { fontFamily: Fonts.headingSemiBold },
+                }}
+              >
                 {data.response}
               </Markdown>
             
