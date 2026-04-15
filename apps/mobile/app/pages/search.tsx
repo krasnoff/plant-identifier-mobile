@@ -20,7 +20,7 @@ import useGetData from '@/hooks/useGetData';
 
 export default function Search() {
   const router = useRouter();
-  const { data, error, loading, fetchData, cancelRequest } = useGetData('chat', Methods.POST);
+  const { data, error, loading, fetchData, cancelRequest, setLoading } = useGetData('chat', Methods.POST);
   const { colorScheme } = useTheme();
   const colors = Colors[colorScheme];
 
@@ -34,8 +34,6 @@ export default function Search() {
   const [keyboardMargin, setKeyboardMargin] = useState(0);
 
   const [flashLightOn, setFlashLightOn] = useState(false);
-
-  const [open, setOpen] = useState(false);
 
   const cameraRef = useRef<CameraView | null>(null);
   const [imageUri, setImageUri] = useState<string | null>(null);
@@ -74,7 +72,7 @@ export default function Search() {
       // Handle API error response
     }
 
-    setOpen(false);
+    setLoading(false);
   }, [data, error]);
 
   const takePhotoAsBase64 = async () => {
@@ -156,7 +154,7 @@ export default function Search() {
   }
 
   const handleSubmit = () => {
-    setOpen(true);
+    setLoading(true);
 
     const body = {
       messages: [  // ✅ Now it's an array as expected by the API
@@ -183,7 +181,7 @@ export default function Search() {
   const handleCloseModal = () => {
     // Cancel any ongoing API request
     cancelRequest();
-    setOpen(false);
+    setLoading(false);
   }
 
   return (
@@ -313,7 +311,7 @@ export default function Search() {
       
     </View>
     </ScrollView>
-    <FadeModal visible={open} onClose={handleCloseModal} />
+    <FadeModal visible={loading} onClose={handleCloseModal} />
     </KeyboardAvoidingView>
   );
 }

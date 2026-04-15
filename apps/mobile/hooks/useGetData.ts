@@ -52,7 +52,7 @@ const useGetData = (url: string, method: Methods = Methods.GET) => {
         }
     }, []);
 
-    return { data, error, loading, fetchData, cancelRequest };
+    return { data, error, loading, fetchData, cancelRequest, setLoading };
 }
 
 export default useGetData;
