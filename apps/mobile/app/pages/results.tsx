@@ -1,5 +1,5 @@
 import { useLocalSearchParams } from 'expo-router';
-import { Text, View, StyleSheet, ScrollView, Alert } from 'react-native';
+import { Text, View, StyleSheet, ScrollView, Alert, Share, Platform } from 'react-native';
 import React, { useRef } from 'react';
 import { StatusBar } from 'expo-status-bar';
 import { useTheme } from '../../context/theme-context';
@@ -9,6 +9,7 @@ import Markdown from 'react-native-markdown-display';
 import { Button } from '@react-navigation/elements';
 import { captureRef } from 'react-native-view-shot';
 import * as Sharing from 'expo-sharing';
+import * as FileSystem from 'expo-file-system/legacy';
 
 export default function Results() {
   const { result, imageUri } = useLocalSearchParams<{ result: string, imageUri: string }>();
@@ -27,29 +28,230 @@ export default function Results() {
         return;
       }
 
-      // Use base64 for more reliable cross-platform sharing
-      const uri = await captureRef(viewRef.current, {
-        format: 'png',
-        quality: 0.8,
-        result: 'base64',
-      });
+      console.log('Starting capture process...');
 
-      const isAvailable = await Sharing.isAvailableAsync();
-      if (!isAvailable) {
-        Alert.alert('Sharing is not available on this device');
-        return;
+      // Wait a bit to ensure view is fully rendered
+      await new Promise(resolve => setTimeout(resolve, 500));
+
+      // Extract the plant identification text
+      const plantText = data?.response || 'Plant identification result';
+      
+      // Clean up markdown formatting for plain text sharing
+      const cleanText = plantText
+        .replace(/[#*_`]/g, '') // Remove markdown formatting
+        .replace(/\n\s*\n/g, '\n\n') // Clean up extra line breaks
+        .trim();
+
+      // Try different capture methods progressively
+      let captureSuccess = false;
+      let capturedUri = null;
+      let lastError = null;
+      
+      // Method 1: Basic tmpfile capture
+      try {
+        console.log('Attempting tmpfile capture...');
+        const uri = await captureRef(viewRef.current, {
+          format: 'png',
+          quality: 0.8,
+          result: 'tmpfile',
+        });
+        
+        console.log('Capture successful:', uri);
+        capturedUri = uri;
+        captureSuccess = true;
+        
+      } catch (tmpError) {
+        lastError = `Method 1 failed: ${tmpError.message}`;
+        console.log(lastError);
       }
 
-      // Create data URI for sharing
-      const base64Image = `data:image/png;base64,${uri}`;
+      if (!captureSuccess) {
+        // Method 2: Alternative capture settings
+        try {
+          console.log('Attempting alternative capture settings...');
+          const uri = await captureRef(viewRef.current, {
+            format: 'jpg',
+            quality: 0.8,
+            result: 'tmpfile',
+            snapshotContentContainer: false,
+          });
+          
+          console.log('Alternative capture successful:', uri);
+          capturedUri = uri;
+          captureSuccess = true;
+          
+        } catch (altError) {
+          lastError = `Method 2 failed: ${altError.message}`;
+          console.log(lastError);
+        }
+      }
+
+      if (!captureSuccess) {
+        throw new Error(`Image capture failed: ${lastError}`);
+      }
+
+      // Now try sharing the captured image with text content
+      let shareSuccess = false;
+
+      // Try 1: Copy to shared directory and share with text
+      try {
+        console.log('Attempting to copy image to shareable location...');
+        
+        // Create a unique filename in the documents directory (more accessible)
+        const timestamp = Date.now();
+        const filename = `plant-identification-${timestamp}.png`;
+        const shareablePath = `${FileSystem.documentDirectory}${filename}`;
+
+        // Copy the captured image to a shareable location
+        await FileSystem.copyAsync({
+          from: capturedUri,
+          to: shareablePath,
+        });
+
+        console.log('Image copied to shareable location:', shareablePath);
+
+        // Share with both text and image
+        const shareContent = {
+          title: 'Plant Identification Result',
+          message: `🌱 Plant Identification Result 🌱\n\n${cleanText}`,
+          url: shareablePath,
+        };
+        
+        await Share.share(shareContent);
+        
+        console.log('Share with copied image successful!');
+        shareSuccess = true;
+        
+        // Clean up after 30 seconds
+        setTimeout(async () => {
+          try {
+            await FileSystem.deleteAsync(shareablePath);
+            console.log('Temporary share file cleaned up');
+          } catch (cleanupError) {
+            console.log('Cleanup warning:', cleanupError);
+          }
+        }, 30000);
+        
+      } catch (shareError) {
+        console.log('Copy and share failed:', shareError.message);
+      }
+
+      // Try 2: Android-specific sharing approach
+      if (!shareSuccess && Platform.OS === 'android') {
+        try {
+          console.log('Attempting Android-specific image sharing...');
+          
+          // Share image only first, then follow with text
+          await Share.share({
+            url: capturedUri,
+            type: 'image/png',
+          });
+          
+          // Wait a moment, then share text
+          setTimeout(async () => {
+            try {
+              await Share.share({
+                message: `🌱 Plant Identification Result 🌱\n\n${cleanText}`,
+              });
+            } catch (textError) {
+              console.log('Follow-up text share failed:', textError);
+            }
+          }, 1000);
+          
+          console.log('Android-specific sharing initiated!');
+          shareSuccess = true;
+          
+        } catch (androidError) {
+          console.log('Android-specific sharing failed:', androidError.message);
+        }
+      }
+
+      // Try 3: Direct file sharing without message
+      if (!shareSuccess) {
+        try {
+          console.log('Attempting direct image sharing...');
+          
+          await Share.share({
+            url: capturedUri,
+            title: `Plant ID: ${cleanText.substring(0, 100)}...`,
+          });
+          
+          console.log('Direct image sharing successful!');
+          shareSuccess = true;
+          
+        } catch (directError) {
+          console.log('Direct image sharing failed:', directError.message);
+        }
+      }
+
+      // Try 2: Expo Sharing (if RN Share failed)
+      if (!shareSuccess) {
+        try {
+          console.log('Attempting Expo Sharing as fallback...');
+          
+          const isAvailable = await Sharing.isAvailableAsync();
+          if (isAvailable && capturedUri) {
+            await Sharing.shareAsync(capturedUri, {
+              mimeType: 'image/png',
+              dialogTitle: `Plant Identification: ${cleanText.substring(0, 50)}...`,
+            });
+            console.log('Expo sharing successful!');
+            shareSuccess = true;
+          } else {
+            console.log('Expo sharing not available');
+          }
+          
+        } catch (expoShareError) {
+          console.log('Expo sharing failed:', expoShareError.message);
+        }
+      }
+
+      // Try 3: Text-only fallback (if image sharing failed)
+      if (!shareSuccess) {
+        try {
+          console.log('Attempting text-only sharing fallback...');
+          
+          await Share.share({
+            title: 'Plant Identification Result',
+            message: `🌱 Plant Identification Result 🌱\n\n${cleanText}\n\n(Note: Image sharing failed, but here's the identification text)`,
+          });
+          
+          console.log('Text-only sharing successful!');
+          shareSuccess = true;
+          
+        } catch (textError) {
+          console.log('Text sharing failed:', textError.message);
+        }
+      }
+
+      if (!shareSuccess) {
+        throw new Error('All sharing methods failed');
+      }
       
-      await Sharing.shareAsync(base64Image, {
-        mimeType: 'image/png',
-        dialogTitle: 'Share plant identification',
-      });
     } catch (error) {
-      console.error('Share failed:', error);
-      Alert.alert('Error', 'Failed to capture and share image. Please try again.');
+      console.error('All sharing methods failed:', error);
+      
+      const errorMessage = __DEV__ 
+        ? `Error: ${error.message}` 
+        : `Error: Sharing not supported on this device`;
+      
+      Alert.alert(
+        'Sharing Failed', 
+        `Unable to share the result.\n\n${errorMessage}\n\nYou can take a screenshot manually to save the result.`,
+        [
+          { text: 'Copy Text Only', onPress: () => {
+            const plantText = data?.response || 'Plant identification result';
+            const cleanText = plantText.replace(/[#*_`]/g, '').replace(/\n\s*\n/g, '\n\n').trim();
+            Share.share({
+              title: 'Plant Identification Result',
+              message: `🌱 Plant Identification Result 🌱\n\n${cleanText}`,
+            }).catch(() => {
+              Alert.alert('Error', 'Unable to share text content');
+            });
+          }},
+          { text: 'OK' }
+        ]
+      );
     }
   };
 
