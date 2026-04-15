@@ -47,5 +47,11 @@ Domestic:
 Home Care:
 [Only include this section if domestic = Yes]
 
+Toxicity:
+[Only include this section if the plant is toxic to pets or humans]
+
+Maintenance Level:
+[Only include this section if relevant, e.g., "Easy to maintain", "Moderate care required", "Difficult to maintain"]
+
 the output should be in markdown format, with clear sections and bullet points where appropriate.
 `;
