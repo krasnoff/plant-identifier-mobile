@@ -1,12 +1,14 @@
 import { useLocalSearchParams } from 'expo-router';
-import { Text, View, StyleSheet, ScrollView } from 'react-native';
-import React from 'react';
+import { Text, View, StyleSheet, ScrollView, Alert } from 'react-native';
+import React, { useRef } from 'react';
 import { StatusBar } from 'expo-status-bar';
 import { useTheme } from '../../context/theme-context';
 import { Colors, Fonts } from '../../constants/theme';
 import { Image } from 'expo-image';
 import Markdown from 'react-native-markdown-display';
-
+import { Button } from '@react-navigation/elements';
+import { captureRef } from 'react-native-view-shot';
+import * as Sharing from 'expo-sharing';
 
 export default function Results() {
   const { result, imageUri } = useLocalSearchParams<{ result: string, imageUri: string }>();
@@ -16,16 +18,54 @@ export default function Results() {
   // Parse the API response
   const data = result ? JSON.parse(result) : null;
 
+  const viewRef = useRef<View>(null);
+
+  const onShareCapture = async () => {
+    try {
+      if (!viewRef.current) {
+        Alert.alert('Error', 'View is not ready yet. Please try again.');
+        return;
+      }
+
+      const uri = await captureRef(viewRef.current, {
+        format: 'png',
+        quality: 1,
+        result: 'tmpfile',
+      });
+
+      const isAvailable = await Sharing.isAvailableAsync();
+      if (!isAvailable) {
+        Alert.alert('Sharing is not available on this device');
+        return;
+      }
+
+      // Some setups need file:// prefix
+      const shareUri = uri.startsWith('file://') ? uri : `file://${uri}`;
+
+      await Sharing.shareAsync(shareUri, {
+        mimeType: 'image/png',
+        dialogTitle: 'Share captured image',
+      });
+    } catch (error) {
+      console.error('Share failed:', error);
+      Alert.alert('Error', 'Failed to capture and share image');
+    }
+  };
+
   return (
-    <ScrollView 
-      style={[{ flex: 1, backgroundColor: colors.background }]}
-      contentContainerStyle={[styles.container, { backgroundColor: colors.background }]}
-    >
+    <View style={[styles.screen, { backgroundColor: colors.background }]}> 
+      <ScrollView
+        style={styles.scroll}
+        contentContainerStyle={[
+          styles.container,
+          { backgroundColor: colors.background, paddingBottom: 96 },
+        ]}
+      >
       <StatusBar
         backgroundColor={colors.background}
         style={colorScheme === 'dark' ? 'light' : 'dark'}
       />
-      <View>        
+      <View ref={viewRef} collapsable={false}>        
         {imageUri && imageUri.trim() !== '' ? (
           <View>
             <View style={[styles.previewContainer]}>
@@ -60,12 +100,23 @@ export default function Results() {
             
           )}
         </View>
+        <View style={styles.centerButtonWrapper}>
+          <Button onPress={onShareCapture}>Share</Button>
+        </View>
       </View>
-    </ScrollView>
+      </ScrollView>
+      
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
+  screen: {
+    flex: 1,
+  },
+  scroll: {
+    flex: 1,
+  },
   container: {
     alignItems: 'center',
     paddingVertical: 20,
@@ -98,5 +149,10 @@ const styles = StyleSheet.create({
   },
   textContainer: {
     fontFamily: Fonts.body,
+  },
+  centerButtonWrapper: {
+    marginTop: 4,
+    marginVertical: 0,
+    alignSelf: 'center',
   }
 });
