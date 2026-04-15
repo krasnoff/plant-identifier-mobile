@@ -27,10 +27,11 @@ export default function Results() {
         return;
       }
 
+      // Use base64 for more reliable cross-platform sharing
       const uri = await captureRef(viewRef.current, {
         format: 'png',
-        quality: 1,
-        result: 'tmpfile',
+        quality: 0.8,
+        result: 'base64',
       });
 
       const isAvailable = await Sharing.isAvailableAsync();
@@ -39,16 +40,16 @@ export default function Results() {
         return;
       }
 
-      // Some setups need file:// prefix
-      const shareUri = uri.startsWith('file://') ? uri : `file://${uri}`;
-
-      await Sharing.shareAsync(shareUri, {
+      // Create data URI for sharing
+      const base64Image = `data:image/png;base64,${uri}`;
+      
+      await Sharing.shareAsync(base64Image, {
         mimeType: 'image/png',
-        dialogTitle: 'Share captured image',
+        dialogTitle: 'Share plant identification',
       });
     } catch (error) {
       console.error('Share failed:', error);
-      Alert.alert('Error', 'Failed to capture and share image');
+      Alert.alert('Error', 'Failed to capture and share image. Please try again.');
     }
   };
 
