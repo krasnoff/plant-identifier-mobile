@@ -1,5 +1,5 @@
 import { useRouter } from 'expo-router';
-import { Text, View, StyleSheet, Pressable, Button, TextInput, KeyboardAvoidingView, Platform, ScrollView, Keyboard } from 'react-native';
+import { Text, View, StyleSheet, Pressable, Button, TextInput, KeyboardAvoidingView, Platform, ScrollView, Keyboard, ToastAndroid } from 'react-native';
 import React, { useEffect, useRef, useState } from 'react';
 import { StatusBar } from 'expo-status-bar';
 import { useTheme } from '../../context/theme-context';
@@ -69,11 +69,21 @@ export default function Search() {
       });
     } else if (error) {
       console.error('API error:', error);
-      // Handle API error response
+      showToastWithGravityAndOffset();
     }
 
     setLoading(false);
   }, [data, error]);
+
+  const showToastWithGravityAndOffset = () => {
+    ToastAndroid.showWithGravityAndOffset(
+      'There was an error processing your request. Please try again.',
+      ToastAndroid.LONG,
+      ToastAndroid.BOTTOM,
+      25,
+      50,
+    );
+  };
 
   const takePhotoAsBase64 = async () => {
     if (!cameraRef.current) return;
