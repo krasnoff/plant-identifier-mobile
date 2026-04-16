@@ -34,7 +34,7 @@ const useGetData = (url: string, method: Methods = Methods.GET) => {
             setData(response.data);
         } catch (err: any) {
             if (err.name === 'CanceledError' || err.code === 'ERR_CANCELED') {
-                console.log('Request was canceled');
+                console.error('Request was canceled');
                 return; // Don't set error for canceled requests
             }
             console.error("Error fetching data:", err.response?.data || err.message);

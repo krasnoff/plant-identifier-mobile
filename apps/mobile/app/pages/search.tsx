@@ -132,7 +132,7 @@ export default function Search() {
       }
       
     } catch (error) {
-      console.log('Image compression error:', error);
+      console.error('Image compression error:', error);
       // Fallback: convert original image to base64
       const response = await fetch(photo.uri);
       const blob = await response.blob();
