@@ -6,10 +6,6 @@ import { useTheme } from '../../context/theme-context';
 import { Colors, Fonts } from '../../constants/theme';
 import { Image } from 'expo-image';
 import Markdown from 'react-native-markdown-display';
-import { Button } from '@react-navigation/elements';
-import { captureRef } from 'react-native-view-shot';
-import * as Sharing from 'expo-sharing';
-import * as FileSystem from 'expo-file-system/legacy';
 
 export default function Results() {
   const { result, imageUri } = useLocalSearchParams<{ result: string, imageUri: string }>();
