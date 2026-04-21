@@ -20,7 +20,7 @@ import useGetData from '@/hooks/useGetData';
 
 export default function Search() {
   const router = useRouter();
-  const { data, error, loading, fetchData, cancelRequest, setLoading } = useGetData('chat', Methods.POST);
+  const { data, error, loading, fetchData, cancelRequest, setLoading } = useGetData('chat2', Methods.POST);
   const { colorScheme } = useTheme();
   const colors = Colors[colorScheme];
 
@@ -101,7 +101,7 @@ export default function Search() {
     try {
       const manipulatedImage = await ImageManipulator.manipulateAsync(
         photo.uri,
-        [{ resize: { width: 100 } }], // resize to max width of 500px, height will be proportional
+        [{ resize: { width: 80 } }], // resize to max width of 500px, height will be proportional
         { 
           compress: 0.8, // compression quality (0-1)
           format: ImageManipulator.SaveFormat.JPEG,

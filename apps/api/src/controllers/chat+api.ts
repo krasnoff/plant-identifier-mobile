@@ -6,7 +6,7 @@ import { systemPrompt } from '../lib/system_prompt';
 
 const router = express.Router();
 
-router.post("/chat", async (request: Request, response: Response) => {
+router.post("/chat2", async (request: Request, response: Response) => {
   const { messages } = request.body as { messages?: any[] };
 
   if (!Array.isArray(messages)) {
