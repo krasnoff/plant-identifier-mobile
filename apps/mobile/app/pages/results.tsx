@@ -1,19 +1,77 @@
 import { useLocalSearchParams } from 'expo-router';
-import { Text, View, StyleSheet, ScrollView, Alert, Share, Platform } from 'react-native';
-import React, { useRef } from 'react';
+import { Text, View, StyleSheet, ScrollView, Alert, Share, Platform, ActivityIndicator } from 'react-native';
+import React, { useRef, useState } from 'react';
 import { StatusBar } from 'expo-status-bar';
 import { useTheme } from '../../context/theme-context';
 import { Colors, Fonts } from '../../constants/theme';
 import { Image } from 'expo-image';
 import Markdown from 'react-native-markdown-display';
+import { Button } from '@react-navigation/elements';
+import { File, Paths } from 'expo-file-system';
+import * as WebBrowser from 'expo-web-browser';
+import * as Sharing from 'expo-sharing';
 
 export default function Results() {
   const { result, imageUri } = useLocalSearchParams<{ result: string, imageUri: string }>();
   const { colorScheme } = useTheme();
   const colors = Colors[colorScheme];
+  const [loadingPdf, setLoadingPdf] = useState(false);
 
   // Parse the API response
   const data = result ? JSON.parse(result) : null;  
+
+  const handleViewPdf = async () => {
+    try {
+      setLoadingPdf(true);
+      const apiBaseUrl = process.env.EXPO_PUBLIC_BASE_URL;
+      const pdfUrl = `${apiBaseUrl}shem-pdf`;
+      
+      if (Platform.OS === 'ios' || Platform.OS === 'android') {
+        // For mobile devices, download the file first and then open it
+        const localFile = new File(Paths.document, 'shem.pdf');
+        
+        // Fetch the PDF data
+        const response = await fetch(pdfUrl);
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const pdfData = await response.arrayBuffer();
+        
+        // Convert ArrayBuffer to Uint8Array for expo-file-system compatibility
+        const uint8Array = new Uint8Array(pdfData);
+        
+        // Write the PDF data to the file
+        await localFile.write(uint8Array);
+        
+        if (localFile.exists) {
+          // Use expo-sharing to properly open the PDF file
+          const isAvailable = await Sharing.isAvailableAsync();
+          if (isAvailable) {
+            await Sharing.shareAsync(localFile.uri, {
+              mimeType: 'application/pdf',
+              dialogTitle: 'Open PDF with...',
+            });
+          } else {
+            // Fallback: use WebBrowser for viewing
+            await WebBrowser.openBrowserAsync(pdfUrl);
+          }
+        }
+      } else {
+        // For web/desktop, open directly in browser
+        await WebBrowser.openBrowserAsync(pdfUrl);
+      }
+    } catch (error) {
+      console.error('Error opening PDF:', error);
+      Alert.alert(
+        'Error',
+        'Unable to open PDF file. Please try again.',
+        [{ text: 'OK' }]
+      );
+    } finally {
+      setLoadingPdf(false);
+    }
+  };
 
   return (
     <View style={[styles.screen, { backgroundColor: colors.background }]}> 
@@ -21,7 +79,7 @@ export default function Results() {
         style={styles.scroll}
         contentContainerStyle={[
           styles.container,
-          { backgroundColor: colors.background, paddingBottom: 96 },
+          { backgroundColor: colors.background, paddingBottom: 30 },
         ]}
       >
       <StatusBar
@@ -63,6 +121,14 @@ export default function Results() {
             
           )}
         </View>
+      </View>
+      <View style={styles.buttonContainer}>
+        <Button 
+          onPress={() => handleViewPdf()} 
+          disabled={loadingPdf}
+        >
+          {loadingPdf ? 'Loading PDF...' : 'View PDF Guide'}
+        </Button>
       </View>
       </ScrollView>
       
@@ -114,5 +180,12 @@ const styles = StyleSheet.create({
     marginTop: 4,
     marginVertical: 0,
     alignSelf: 'center',
-  }
+  },
+  buttonContainer: {
+    flexDirection: 'row',
+    gap: 12,
+    justifyContent: 'space-around',
+    width: '100%',
+    marginTop: 8,
+  },
 });
