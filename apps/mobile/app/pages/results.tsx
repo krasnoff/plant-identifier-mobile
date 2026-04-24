@@ -24,14 +24,19 @@ export default function Results() {
     try {
       setLoadingPdf(true);
       const apiBaseUrl = process.env.EXPO_PUBLIC_BASE_URL;
-      const pdfUrl = `${apiBaseUrl}shem-pdf`;
+      const pdfUrl = `${apiBaseUrl}getPDF`;
       
       if (Platform.OS === 'ios' || Platform.OS === 'android') {
         // For mobile devices, download the file first and then open it
         const localFile = new File(Paths.document, 'shem.pdf');
         
         // Fetch the PDF data
-        const response = await fetch(pdfUrl);
+        const response = await fetch(pdfUrl, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
