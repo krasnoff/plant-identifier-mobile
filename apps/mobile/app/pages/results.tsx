@@ -26,6 +26,29 @@ export default function Results() {
       const apiBaseUrl = process.env.EXPO_PUBLIC_BASE_URL;
       const pdfUrl = `${apiBaseUrl}getPDF`;
       
+      // Convert image to base64
+      let imageBase64 = '';
+      if (imageUri && imageUri.trim() !== '') {
+        try {
+          // Use fetch to get the image data, which works with any URI format
+          const response = await fetch(imageUri);
+          const blob = await response.blob();
+          
+          // Convert blob to base64
+          const reader = new FileReader();
+          imageBase64 = await new Promise((resolve) => {
+            reader.onloadend = () => {
+              const base64data = reader.result as string;
+              // Remove the data:image/xxx;base64, prefix to get just the base64 string
+              resolve(base64data.split(',')[1] || base64data);
+            };
+            reader.readAsDataURL(blob);
+          });
+        } catch (error) {
+          console.warn('Failed to convert image to base64:', error);
+        }
+      }
+      
       if (Platform.OS === 'ios' || Platform.OS === 'android') {
         // For mobile devices, download the file first and then open it
         const localFile = new File(Paths.document, 'shem.pdf');
@@ -36,6 +59,7 @@ export default function Results() {
           headers: {
             'Content-Type': 'application/json',
           },
+          body: JSON.stringify({ result, imageBase64 }),
         });
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
@@ -64,7 +88,9 @@ export default function Results() {
         }
       } else {
         // For web/desktop, open directly in browser
-        await WebBrowser.openBrowserAsync(pdfUrl);
+        // Note: For web, we might need to handle base64 conversion differently
+        // depending on how the imageUri is structured in web environments
+        await WebBrowser.openBrowserAsync(`${pdfUrl}?result=${encodeURIComponent(result)}&imageBase64=${encodeURIComponent(imageBase64)}`);
       }
     } catch (error) {
       console.error('Error opening PDF:', error);
@@ -112,7 +138,14 @@ export default function Results() {
           {data && (
             
               <Markdown
-                
+                style={{
+                  body: { fontFamily: Fonts.body },
+                  paragraph: { fontFamily: Fonts.body },
+                  text: { fontFamily: Fonts.body },
+                  heading1: { fontFamily: Fonts.heading },
+                  heading2: { fontFamily: Fonts.headingSemiBold },
+                  heading3: { fontFamily: Fonts.headingSemiBold },
+                }}
               >
                 {data.response}
               </Markdown>
