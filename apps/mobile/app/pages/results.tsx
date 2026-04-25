@@ -91,7 +91,7 @@ export default function Results() {
         backgroundColor={colors.background}
         style={colorScheme === 'dark' ? 'light' : 'dark'}
       />
-      <View collapsable={false}>        
+      <View collapsable={false} style={{alignSelf: 'stretch'}}>        
         {imageUri && imageUri.trim() !== '' ? (
           <View>
             <View style={[styles.previewContainer]}>
@@ -112,14 +112,7 @@ export default function Results() {
           {data && (
             
               <Markdown
-                style={{
-                  body: { fontFamily: Fonts.body },
-                  paragraph: { fontFamily: Fonts.body },
-                  text: { fontFamily: Fonts.body },
-                  heading1: { fontFamily: Fonts.heading },
-                  heading2: { fontFamily: Fonts.headingSemiBold },
-                  heading3: { fontFamily: Fonts.headingSemiBold },
-                }}
+                
               >
                 {data.response}
               </Markdown>
@@ -175,8 +168,8 @@ const styles = StyleSheet.create({
     elevation: 10,
     borderRadius: 20,
     padding: 20,
-    margin: 20,
-    width: '100%',
+    margin: 20
+    
   },
   textContainer: {
     fontFamily: Fonts.body,
