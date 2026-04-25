@@ -10,6 +10,7 @@ import { Button } from '@react-navigation/elements';
 import { File, Paths } from 'expo-file-system';
 import * as WebBrowser from 'expo-web-browser';
 import * as Sharing from 'expo-sharing';
+import * as ImageManipulator from 'expo-image-manipulator';
 
 export default function Results() {
   const { result, imageUri } = useLocalSearchParams<{ result: string, imageUri: string }>();
@@ -28,25 +29,53 @@ export default function Results() {
       
       // Convert image to base64
       let imageBase64 = '';
+      
       if (imageUri && imageUri.trim() !== '') {
         try {
-          // Use fetch to get the image data, which works with any URI format
-          const response = await fetch(imageUri);
-          const blob = await response.blob();
+          console.log('Processing image with URI:', imageUri);
           
-          // Convert blob to base64
-          const reader = new FileReader();
-          imageBase64 = await new Promise((resolve) => {
-            reader.onloadend = () => {
-              const base64data = reader.result as string;
-              // Remove the data:image/xxx;base64, prefix to get just the base64 string
-              resolve(base64data.split(',')[1] || base64data);
-            };
-            reader.readAsDataURL(blob);
-          });
-        } catch (error) {
-          console.warn('Failed to convert image to base64:', error);
+          const manipulatedImage = await ImageManipulator.manipulateAsync(
+            imageUri,
+            [{ resize: { width: 80 } }], // resize to max width of 500px, height will be proportional
+            { 
+              compress: 0.8, // compression quality (0-1)
+              base64: true, // Get base64 string directly
+              format: ImageManipulator.SaveFormat.JPEG
+            }
+          );
+
+          // Get the base64 string
+          const base64String = manipulatedImage.base64;
+          if (base64String) {
+            imageBase64 = base64String;
+            console.log('Successfully processed image, base64 length:', base64String.length);
+          } else {
+            console.warn('No base64 data returned from image manipulation');
+          }
+          
+        } catch (imageError) {
+          console.error('Error processing image with ImageManipulator:', imageError);
+          
+          // Fallback: try to use fetch method as before
+          try {
+            const response = await fetch(imageUri);
+            const blob = await response.blob();
+            
+            const reader = new FileReader();
+            imageBase64 = await new Promise((resolve) => {
+              reader.onloadend = () => {
+                const base64data = reader.result as string;
+                resolve(base64data.split(',')[1] || base64data);
+              };
+              reader.readAsDataURL(blob);
+            });
+            console.log('Fallback method succeeded');
+          } catch (fallbackError) {
+            console.error('Both image processing methods failed:', fallbackError);
+          }
         }
+      } else {
+        console.warn('No valid imageUri provided:', imageUri);
       }
       
       if (Platform.OS === 'ios' || Platform.OS === 'android') {
