@@ -17,6 +17,7 @@ import UndoImageComponent from '@/assets/svg/undo';
 import * as ImageManipulator from 'expo-image-manipulator';
 import { Methods } from '@/enums/methods.enums';
 import useGetData from '@/hooks/useGetData';
+import useUtils from '@/hooks/usUtils';
 
 export default function Search() {
   const router = useRouter();
@@ -40,7 +41,7 @@ export default function Search() {
   const [imageBase64, setImageBase64] = useState<string | null>(null);
   const [userText, setUserText] = useState<string>('');
 
-
+  const { manipulateImage } = useUtils();
 
   useEffect(() => {
     const showSubscription = Keyboard.addListener('keyboardDidShow', () => {
@@ -99,16 +100,7 @@ export default function Search() {
 
     // 2) Compress and resize image using expo-image-manipulator
     try {
-      const manipulatedImage = await ImageManipulator.manipulateAsync(
-        photo.uri,
-        [{ resize: { width: 80 } }], // resize to max width of 500px, height will be proportional
-        { 
-          compress: 0.8, // compression quality (0-1)
-          format: ImageManipulator.SaveFormat.JPEG,
-          base64: true // Get base64 string directly
-        }
-      );
-      
+      const manipulatedImage = await manipulateImage(photo.uri, 80);      
          
       // 3) Return the base64 string
       const base64String = manipulatedImage.base64;

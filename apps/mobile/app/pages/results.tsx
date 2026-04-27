@@ -11,12 +11,15 @@ import { File, Paths } from 'expo-file-system';
 import * as WebBrowser from 'expo-web-browser';
 import * as Sharing from 'expo-sharing';
 import * as ImageManipulator from 'expo-image-manipulator';
+import useUtils from '@/hooks/usUtils';
 
 export default function Results() {
   const { result, imageUri } = useLocalSearchParams<{ result: string, imageUri: string }>();
   const { colorScheme } = useTheme();
   const colors = Colors[colorScheme];
   const [loadingPdf, setLoadingPdf] = useState(false);
+
+  const { manipulateImage } = useUtils();
 
   // Parse the API response
   const data = result ? JSON.parse(result) : null;  
@@ -34,15 +37,7 @@ export default function Results() {
         try {
           console.log('Processing image with URI:', imageUri);
           
-          const manipulatedImage = await ImageManipulator.manipulateAsync(
-            imageUri,
-            [{ resize: { width: 500 } }], // resize to max width of 500px, height will be proportional
-            { 
-              compress: 0.8, // compression quality (0-1)
-              base64: true, // Get base64 string directly
-              format: ImageManipulator.SaveFormat.JPEG
-            }
-          );
+          const manipulatedImage = await manipulateImage(imageUri, 500);   
 
           // Get the base64 string
           const base64String = manipulatedImage.base64;
