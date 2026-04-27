@@ -10,7 +10,7 @@ import { Button } from '@react-navigation/elements';
 import { File, Paths } from 'expo-file-system';
 import * as WebBrowser from 'expo-web-browser';
 import * as Sharing from 'expo-sharing';
-import useUtils from '@/hooks/usUtils';
+import useUtils from '@/hooks/useUtils';
 
 export default function Results() {
   const { result, imageUri } = useLocalSearchParams<{ result: string, imageUri: string }>();

@@ -17,7 +17,7 @@ import UndoImageComponent from '@/assets/svg/undo';
 import * as ImageManipulator from 'expo-image-manipulator';
 import { Methods } from '@/enums/methods.enums';
 import useGetData from '@/hooks/useGetData';
-import useUtils from '@/hooks/usUtils';
+import useUtils from '@/hooks/useUtils';
 
 export default function Search() {
   const router = useRouter();
