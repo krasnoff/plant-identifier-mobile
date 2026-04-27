@@ -1,5 +1,5 @@
 import { useLocalSearchParams } from 'expo-router';
-import { Text, View, StyleSheet, ScrollView, Alert, Share, Platform, ActivityIndicator } from 'react-native';
+import { Text, View, StyleSheet, ScrollView, Alert, Platform } from 'react-native';
 import React, { useRef, useState } from 'react';
 import { StatusBar } from 'expo-status-bar';
 import { useTheme } from '../../context/theme-context';
@@ -10,7 +10,6 @@ import { Button } from '@react-navigation/elements';
 import { File, Paths } from 'expo-file-system';
 import * as WebBrowser from 'expo-web-browser';
 import * as Sharing from 'expo-sharing';
-import * as ImageManipulator from 'expo-image-manipulator';
 import useUtils from '@/hooks/usUtils';
 
 export default function Results() {
