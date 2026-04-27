@@ -13,8 +13,25 @@ const useUtils = () => {
         );
     }
 
+    const getBase64FromUri = async (uri: string) => {
+        const response = await fetch(uri);
+        const blob = await response.blob();
+        return new Promise<string>((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                const base64 = reader.result as string;
+                // Remove data URL prefix to get just the base64 string
+                const base64String = base64.split(',')[1];
+                resolve(base64String);
+            };
+            reader.onerror = reject;
+            reader.readAsDataURL(blob);
+        });
+    }
+
     return {
-        manipulateImage
+        manipulateImage,
+        getBase64FromUri
     }
 }
 

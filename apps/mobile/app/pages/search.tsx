@@ -41,7 +41,7 @@ export default function Search() {
   const [imageBase64, setImageBase64] = useState<string | null>(null);
   const [userText, setUserText] = useState<string>('');
 
-  const { manipulateImage } = useUtils();
+  const { manipulateImage, getBase64FromUri } = useUtils();
 
   useEffect(() => {
     const showSubscription = Keyboard.addListener('keyboardDidShow', () => {
@@ -107,38 +107,13 @@ export default function Search() {
       if (base64String) {
         return base64String;
       } else {
-        // Convert the manipulated image URI to base64
-        const response = await fetch(manipulatedImage.uri);
-        const blob = await response.blob();
-        return new Promise<string>((resolve, reject) => {
-          const reader = new FileReader();
-          reader.onloadend = () => {
-            const base64 = reader.result as string;
-            // Remove data URL prefix to get just the base64 string
-            const base64String = base64.split(',')[1];
-            resolve(base64String);
-          };
-          reader.onerror = reject;
-          reader.readAsDataURL(blob);
-        });
+        return await getBase64FromUri(manipulatedImage.uri);
       }
       
     } catch (error) {
       console.error('Image compression error:', error);
       // Fallback: convert original image to base64
-      const response = await fetch(photo.uri);
-      const blob = await response.blob();
-      return new Promise<string>((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onloadend = () => {
-          const base64 = reader.result as string;
-          // Remove data URL prefix to get just the base64 string
-          const base64String = base64.split(',')[1];
-          resolve(base64String);
-        };
-        reader.onerror = reject;
-        reader.readAsDataURL(blob);
-      });
+      return await getBase64FromUri(photo.uri);
     }
   };
 

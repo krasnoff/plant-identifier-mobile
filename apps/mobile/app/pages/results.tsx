@@ -19,7 +19,7 @@ export default function Results() {
   const colors = Colors[colorScheme];
   const [loadingPdf, setLoadingPdf] = useState(false);
 
-  const { manipulateImage } = useUtils();
+  const { manipulateImage, getBase64FromUri } = useUtils();
 
   // Parse the API response
   const data = result ? JSON.parse(result) : null;  
@@ -53,17 +53,7 @@ export default function Results() {
           
           // Fallback: try to use fetch method as before
           try {
-            const response = await fetch(imageUri);
-            const blob = await response.blob();
-            
-            const reader = new FileReader();
-            imageBase64 = await new Promise((resolve) => {
-              reader.onloadend = () => {
-                const base64data = reader.result as string;
-                resolve(base64data.split(',')[1] || base64data);
-              };
-              reader.readAsDataURL(blob);
-            });
+            imageBase64 = await getBase64FromUri(imageUri);
             console.log('Fallback method succeeded');
           } catch (fallbackError) {
             console.error('Both image processing methods failed:', fallbackError);
