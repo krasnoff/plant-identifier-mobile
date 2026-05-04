@@ -14,10 +14,11 @@ import FlashLightOnComponent from '@/assets/svg/flashLightOn';
 import FadeModal from '@/components/fade-modal';
 import { Image } from 'expo-image';
 import UndoImageComponent from '@/assets/svg/undo';
-import * as ImageManipulator from 'expo-image-manipulator';
 import { Methods } from '@/enums/methods.enums';
 import useGetData from '@/hooks/useGetData';
 import useUtils from '@/hooks/useUtils';
+// import KeyboardGestureArea from 'react-native-keyboard-controller';
+
 
 export default function Search() {
   const router = useRouter();
@@ -162,11 +163,7 @@ export default function Search() {
   }
 
   return (
-    <KeyboardAvoidingView
-      style={{ flex: 1 }}
-      behavior={Platform.OS === 'ios' ? 'padding' : (keyboardOpen ? 'height' : undefined)}
-      keyboardVerticalOffset={Platform.OS === 'ios' ? headerHeight : -keyboardMargin - 10} // tweak this if needed
-    >
+    <>
     <ScrollView
       contentContainerStyle={{ flexGrow: 1, justifyContent: 'flex-end' }}
       keyboardShouldPersistTaps="handled"
@@ -289,7 +286,7 @@ export default function Search() {
     </View>
     </ScrollView>
     <FadeModal visible={loading} onClose={handleCloseModal} />
-    </KeyboardAvoidingView>
+    </>
   );
 }
 
