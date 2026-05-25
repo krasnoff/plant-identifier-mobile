@@ -10,9 +10,13 @@ import { File, Paths } from 'expo-file-system';
 import * as WebBrowser from 'expo-web-browser';
 import * as Sharing from 'expo-sharing';
 import useUtils from '@/hooks/useUtils';
+import { getCapturedImageUri } from '@/store/capturedImageStore';
 
 export default function Results() {
-  const { result, imageUri } = useLocalSearchParams<{ result: string, imageUri: string }>();
+  const { result } = useLocalSearchParams<{ result: string }>();
+  // Read imageUri from the module store — expo-router v4 URL-encodes file:// URIs
+  // which makes them unresolvable by expo-image, so we bypass URL params entirely.
+  const imageUri = getCapturedImageUri();
   const { colorScheme } = useTheme();
   const colors = Colors[colorScheme];
   const [loadingPdf, setLoadingPdf] = useState(false);
@@ -126,7 +130,6 @@ export default function Results() {
         ]}
       >
       <StatusBar
-        backgroundColor={colors.background}
         style={colorScheme === 'dark' ? 'light' : 'dark'}
       />
       <View collapsable={false} style={{alignSelf: 'stretch'}}>        
@@ -137,7 +140,7 @@ export default function Results() {
                 source={{ uri: imageUri }}
                 style={styles.preview}
                 contentFit="contain"
-                
+                cachePolicy="none"
               />
             </View>
           </View>

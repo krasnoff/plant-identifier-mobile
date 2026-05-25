@@ -15,6 +15,7 @@ import UndoImageComponent from '@/assets/svg/undo';
 import { Methods } from '@/enums/methods.enums';
 import useGetData from '@/hooks/useGetData';
 import useUtils from '@/hooks/useUtils';
+import { setCapturedImageUri } from '@/store/capturedImageStore';
 // import KeyboardGestureArea from 'react-native-keyboard-controller';
 
 
@@ -48,11 +49,13 @@ export default function Search() {
 
   useEffect(() => {
     if (data && data.response) {
+      // Store image URI in module-level store so results page can access it
+      // without going through expo-router URL params (which URL-encode file:// URIs)
+      setCapturedImageUri(imageUri || '');
       router.push({
         pathname: '/pages/results',
         params: {
-          result: JSON.stringify(data), // Pass the entire response as a string
-          imageUri: imageUri || '' // Pass the image URI if needed on the results page
+          result: JSON.stringify(data),
         }
       });
     } else if (error) {
