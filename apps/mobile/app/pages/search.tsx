@@ -149,7 +149,6 @@ export default function Search() {
     >
     <View style={[styles.container, { backgroundColor: colors.background }]}>
       <StatusBar
-        backgroundColor={colors.background}
         style={colorScheme === 'dark' ? 'light' : 'dark'}
       />
       
