@@ -1,12 +1,10 @@
 import { useRouter } from 'expo-router';
-import { Text, View, StyleSheet, Pressable, Button, TextInput, KeyboardAvoidingView, Platform, ScrollView, Keyboard, ToastAndroid } from 'react-native';
+import { Text, View, StyleSheet, Pressable, Button, TextInput, ScrollView, ToastAndroid } from 'react-native';
 import React, { useEffect, useRef, useState } from 'react';
 import { StatusBar } from 'expo-status-bar';
 import { useTheme } from '../../context/theme-context';
 import { Colors, Fonts } from '../../constants/theme';
 import { CameraView, CameraType, useCameraPermissions, CameraCapturedPicture } from 'expo-camera';
-import { useHeaderHeight } from '@react-navigation/elements';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import SubmitButtonComponent from '@/assets/svg/submitButton';
 import FlipCameraComponent from '@/assets/svg/flipCamera';
@@ -29,12 +27,6 @@ export default function Search() {
   const [facing, setFacing] = useState<CameraType>('back');
   const [permission, requestPermission] = useCameraPermissions();
 
-  const [keyboardOpen, setKeyboardOpen] = useState(false);
-  const headerHeight = useHeaderHeight(); // Adjust this value based on your header's actual height
-  const insets = useSafeAreaInsets();
-
-  const [keyboardMargin, setKeyboardMargin] = useState(0);
-
   const [flashLightOn, setFlashLightOn] = useState(false);
 
   const cameraRef = useRef<CameraView | null>(null);
@@ -44,21 +36,15 @@ export default function Search() {
 
   const { manipulateImage, getBase64FromUri } = useUtils();
 
-  useEffect(() => {
-    const showSubscription = Keyboard.addListener('keyboardDidShow', () => {
-      setKeyboardOpen(true);
-    });
-    const hideSubscription = Keyboard.addListener('keyboardDidHide', () => {
-      setKeyboardOpen(false);
-    });
-
-    setKeyboardMargin(headerHeight - insets.top + insets.bottom);
-
-    return () => {
-      showSubscription.remove();
-      hideSubscription.remove();
-    };
-  }, []);
+  function showToastWithGravityAndOffset() {
+    ToastAndroid.showWithGravityAndOffset(
+      'There was an error processing your request. Please try again.',
+      ToastAndroid.LONG,
+      ToastAndroid.BOTTOM,
+      25,
+      50,
+    );
+  }
 
   useEffect(() => {
     if (data && data.response) {
@@ -76,16 +62,6 @@ export default function Search() {
 
     setLoading(false);
   }, [data, error]);
-
-  const showToastWithGravityAndOffset = () => {
-    ToastAndroid.showWithGravityAndOffset(
-      'There was an error processing your request. Please try again.',
-      ToastAndroid.LONG,
-      ToastAndroid.BOTTOM,
-      25,
-      50,
-    );
-  };
 
   const takePhotoAsBase64 = async () => {
     if (!cameraRef.current) return;

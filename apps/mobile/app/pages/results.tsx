@@ -1,12 +1,11 @@
 import { useLocalSearchParams } from 'expo-router';
-import { Text, View, StyleSheet, ScrollView, Alert, Platform } from 'react-native';
-import React, { useRef, useState } from 'react';
+import { Text, View, StyleSheet, ScrollView, Alert, Platform, Pressable } from 'react-native';
+import React, { useState } from 'react';
 import { StatusBar } from 'expo-status-bar';
 import { useTheme } from '../../context/theme-context';
 import { Colors, Fonts } from '../../constants/theme';
 import { Image } from 'expo-image';
 import Markdown from 'react-native-markdown-display';
-import { Button } from '@react-navigation/elements';
 import { File, Paths } from 'expo-file-system';
 import * as WebBrowser from 'expo-web-browser';
 import * as Sharing from 'expo-sharing';
@@ -144,7 +143,7 @@ export default function Results() {
           </View>
         ) : (
           <Text style={{ color: colors.text, textAlign: 'center', marginBottom: 20 }}>
-            No image available - imageUri is: "{imageUri || 'undefined'}"
+            No image available - imageUri value: {imageUri || 'undefined'}
           </Text>
         )}
         <View style={styles.descriptionContainer}>
@@ -167,12 +166,19 @@ export default function Results() {
         </View>
       </View>
       <View style={styles.buttonContainer}>
-        <Button 
-          onPress={() => handleViewPdf()} 
+        <Pressable
+          onPress={() => handleViewPdf()}
           disabled={loadingPdf}
+          style={({ pressed }) => [
+            styles.primaryButton,
+            loadingPdf ? styles.primaryButtonDisabled : null,
+            pressed ? styles.primaryButtonPressed : null,
+          ]}
         >
-          {loadingPdf ? 'Loading PDF...' : 'View PDF Guide'}
-        </Button>
+          <Text style={styles.primaryButtonText}>
+            {loadingPdf ? 'Loading PDF...' : 'View PDF Guide'}
+          </Text>
+        </Pressable>
       </View>
       </ScrollView>
       
@@ -228,8 +234,27 @@ const styles = StyleSheet.create({
   buttonContainer: {
     flexDirection: 'row',
     gap: 12,
-    justifyContent: 'space-around',
+    justifyContent: 'center',
     width: '100%',
     marginTop: 8,
+  },
+  primaryButton: {
+    backgroundColor: '#0D631B',
+    borderRadius: 9999,
+    paddingVertical: 14,
+    paddingHorizontal: 20,
+    minWidth: 180,
+    alignItems: 'center',
+  },
+  primaryButtonDisabled: {
+    opacity: 0.6,
+  },
+  primaryButtonPressed: {
+    opacity: 0.85,
+  },
+  primaryButtonText: {
+    color: '#FFFFFF',
+    fontFamily: Fonts.heading,
+    fontSize: 16,
   },
 });
