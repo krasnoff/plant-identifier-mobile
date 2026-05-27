@@ -32,6 +32,33 @@
         "TS_NODE_FILES": "true",
         "NODE_ENV": "development"
       }
+    },
+    {
+      "name": "Mobile: Debug Web (Launch Chrome)",
+      "type": "chrome",
+      "request": "launch",
+      "url": "http://localhost:8081",
+      "webRoot": "${workspaceFolder}/apps/mobile",
+      "sourceMaps": true,
+      "sourceMapPathOverrides": {
+        "/*": "${workspaceFolder}/*",
+        "webpack://mobile/./*": "${workspaceFolder}/apps/mobile/*",
+        "webpack://*/./*": "${workspaceFolder}/*"
+      }
+    },
+    {
+      "name": "Mobile: Debug Web (Attach Chrome)",
+      "type": "chrome",
+      "request": "attach",
+      "url": "http://localhost:8081",
+      "port": 9222,
+      "webRoot": "${workspaceFolder}/apps/mobile",
+      "sourceMaps": true,
+      "sourceMapPathOverrides": {
+        "/*": "${workspaceFolder}/*",
+        "webpack://mobile/./*": "${workspaceFolder}/apps/mobile/*",
+        "webpack://*/./*": "${workspaceFolder}/*"
+      }
     }
   ]
 }
